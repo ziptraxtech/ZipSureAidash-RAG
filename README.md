@@ -103,27 +103,3 @@ Once both servers are running, open your browser and visit:
 ```
 http://localhost:3000
 ```
-
-
-## Installation
-
-Install my-project with npm
-
-```bash
-npm install my-project
-cd my-project
-```
-
-## Usage/Examples
-
-```javascript
-import Component from 'my-project'
-
-function App() {
-  return <Component />
-}
-```
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
