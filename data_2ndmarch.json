@@ -1,0 +1,1334 @@
+{
+  "data": [
+    {
+      "evse_id": "032300130C03054",
+      "operator_name": "Broadcast Engineering Consultants India Limited",
+      "date": "2026-03-02",
+      "eventtype": "MeterValues",
+      "createdat": "2026-03-02T20:33:34+05:30",
+      "payload": [
+        {
+          "Key": "connectorId",
+          "Value": 3
+        },
+        {
+          "Key": "meterValue",
+          "Value": [
+            [
+              {
+                "Key": "sampledValue",
+                "Value": [
+                  [
+                    {
+                      "Key": "unit",
+                      "Value": "V"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "259.43"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Voltage"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "Raw"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Temperature"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Celsius"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "50.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Active.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "W"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "823.07"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "unit",
+                      "Value": "A"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "3.18"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Current.Import"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "measurand",
+                      "Value": "Energy.Active.Import.Register"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Wh"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "221220.00"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Factor"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "K"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "1.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Reactive.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "var"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "-0.06"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    }
+                  ]
+                ]
+              },
+              {
+                "Key": "timestamp",
+                "Value": "2026-03-02T15:03:31.000Z"
+              }
+            ]
+          ]
+        },
+        {
+          "Key": "transactionId",
+          "Value": 459633018
+        }
+      ],
+      "idtag": "",
+      "status": "",
+      "time": ""
+    },
+    {
+      "evse_id": "032300130C03054",
+      "operator_name": "Broadcast Engineering Consultants India Limited",
+      "date": "2026-03-02",
+      "eventtype": "MeterValues",
+      "createdat": "2026-03-02T20:33:03+05:30",
+      "payload": [
+        {
+          "Key": "connectorId",
+          "Value": 3
+        },
+        {
+          "Key": "meterValue",
+          "Value": [
+            [
+              {
+                "Key": "sampledValue",
+                "Value": [
+                  [
+                    {
+                      "Key": "unit",
+                      "Value": "V"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "260.30"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Voltage"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "Raw"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Temperature"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Celsius"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "50.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Active.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "W"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "823.12"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "measurand",
+                      "Value": "Current.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "A"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "3.17"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Energy.Active.Import.Register"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Wh"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "221210.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Factor"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "K"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "1.00"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Reactive.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "var"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "-0.06"
+                    }
+                  ]
+                ]
+              },
+              {
+                "Key": "timestamp",
+                "Value": "2026-03-02T15:03:00.000Z"
+              }
+            ]
+          ]
+        },
+        {
+          "Key": "transactionId",
+          "Value": 459633018
+        }
+      ],
+      "idtag": "",
+      "status": "",
+      "time": ""
+    },
+    {
+      "evse_id": "032300130C03054",
+      "operator_name": "Broadcast Engineering Consultants India Limited",
+      "date": "2026-03-02",
+      "eventtype": "MeterValues",
+      "createdat": "2026-03-02T20:32:34+05:30",
+      "payload": [
+        {
+          "Key": "connectorId",
+          "Value": 3
+        },
+        {
+          "Key": "meterValue",
+          "Value": [
+            [
+              {
+                "Key": "sampledValue",
+                "Value": [
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Voltage"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "V"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "258.82"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "Raw"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Temperature"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Celsius"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "50.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Active.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "W"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "823.18"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Current.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "A"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "3.19"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Energy.Active.Import.Register"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Wh"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "221210.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Factor"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "K"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "1.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Reactive.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "var"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "-0.06"
+                    }
+                  ]
+                ]
+              },
+              {
+                "Key": "timestamp",
+                "Value": "2026-03-02T15:02:31.000Z"
+              }
+            ]
+          ]
+        },
+        {
+          "Key": "transactionId",
+          "Value": 459633018
+        }
+      ],
+      "idtag": "",
+      "status": "",
+      "time": ""
+    },
+    {
+      "evse_id": "032300130C03054",
+      "operator_name": "Broadcast Engineering Consultants India Limited",
+      "date": "2026-03-02",
+      "eventtype": "MeterValues",
+      "createdat": "2026-03-02T20:32:03+05:30",
+      "payload": [
+        {
+          "Key": "connectorId",
+          "Value": 3
+        },
+        {
+          "Key": "meterValue",
+          "Value": [
+            [
+              {
+                "Key": "sampledValue",
+                "Value": [
+                  [
+                    {
+                      "Key": "unit",
+                      "Value": "V"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "259.60"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Voltage"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "Raw"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Temperature"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Celsius"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "50.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "value",
+                      "Value": "823.15"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Active.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "W"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Current.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "A"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "3.18"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "measurand",
+                      "Value": "Energy.Active.Import.Register"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Wh"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "221200.00"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Factor"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "K"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "1.00"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Reactive.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "var"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "-0.06"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    }
+                  ]
+                ]
+              },
+              {
+                "Key": "timestamp",
+                "Value": "2026-03-02T15:02:00.000Z"
+              }
+            ]
+          ]
+        },
+        {
+          "Key": "transactionId",
+          "Value": 459633018
+        }
+      ],
+      "idtag": "",
+      "status": "",
+      "time": ""
+    },
+    {
+      "evse_id": "032300130C03054",
+      "operator_name": "Broadcast Engineering Consultants India Limited",
+      "date": "2026-03-02",
+      "eventtype": "MeterValues",
+      "createdat": "2026-03-02T20:31:35+05:30",
+      "payload": [
+        {
+          "Key": "connectorId",
+          "Value": 3
+        },
+        {
+          "Key": "meterValue",
+          "Value": [
+            [
+              {
+                "Key": "timestamp",
+                "Value": "2026-03-02T15:01:30.000Z"
+              },
+              {
+                "Key": "sampledValue",
+                "Value": [
+                  [
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Voltage"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "V"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "260.79"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "Raw"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Temperature"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Celsius"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "50.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "unit",
+                      "Value": "W"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "823.07"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Active.Import"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Current.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "A"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "3.17"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "measurand",
+                      "Value": "Energy.Active.Import.Register"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Wh"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "221190.00"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Factor"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "K"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "1.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Reactive.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "var"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "-0.06"
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "Key": "transactionId",
+          "Value": 459633018
+        }
+      ],
+      "idtag": "",
+      "status": "",
+      "time": ""
+    },
+    {
+      "evse_id": "032300130C03054",
+      "operator_name": "Broadcast Engineering Consultants India Limited",
+      "date": "2026-03-02",
+      "eventtype": "MeterValues",
+      "createdat": "2026-03-02T20:31:04+05:30",
+      "payload": [
+        {
+          "Key": "connectorId",
+          "Value": 3
+        },
+        {
+          "Key": "meterValue",
+          "Value": [
+            [
+              {
+                "Key": "sampledValue",
+                "Value": [
+                  [
+                    {
+                      "Key": "unit",
+                      "Value": "V"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "259.83"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Voltage"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "unit",
+                      "Value": "Celsius"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "50.00"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "Raw"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Temperature"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Active.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "W"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "822.99"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "measurand",
+                      "Value": "Current.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "A"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "3.18"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "value",
+                      "Value": "221190.00"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Energy.Active.Import.Register"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Wh"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Factor"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "K"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "1.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Reactive.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "var"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "-0.06"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    }
+                  ]
+                ]
+              },
+              {
+                "Key": "timestamp",
+                "Value": "2026-03-02T15:00:59.000Z"
+              }
+            ]
+          ]
+        },
+        {
+          "Key": "transactionId",
+          "Value": 459633018
+        }
+      ],
+      "idtag": "",
+      "status": "",
+      "time": ""
+    },
+    {
+      "evse_id": "032300130C03054",
+      "operator_name": "Broadcast Engineering Consultants India Limited",
+      "date": "2026-03-02",
+      "eventtype": "MeterValues",
+      "createdat": "2026-03-02T20:30:32+05:30",
+      "payload": [
+        {
+          "Key": "connectorId",
+          "Value": 3
+        },
+        {
+          "Key": "meterValue",
+          "Value": [
+            [
+              {
+                "Key": "sampledValue",
+                "Value": [
+                  [
+                    {
+                      "Key": "value",
+                      "Value": "258.81"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Voltage"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "V"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "unit",
+                      "Value": "Celsius"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "50.00"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "Raw"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Temperature"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Active.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "W"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "823.24"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "value",
+                      "Value": "3.19"
+                    },
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Current.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "A"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Energy.Active.Import.Register"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "Wh"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "221180.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Factor"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "K"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "1.00"
+                    }
+                  ],
+                  [
+                    {
+                      "Key": "context",
+                      "Value": "Sample.Periodic"
+                    },
+                    {
+                      "Key": "format",
+                      "Value": "SignedData"
+                    },
+                    {
+                      "Key": "measurand",
+                      "Value": "Power.Reactive.Import"
+                    },
+                    {
+                      "Key": "unit",
+                      "Value": "var"
+                    },
+                    {
+                      "Key": "value",
+                      "Value": "-0.06"
+                    }
+                  ]
+                ]
+              },
+              {
+                "Key": "timestamp",
+                "Value": "2026-03-02T15:00:29.000Z"
+              }
+            ]
+          ]
+        },
+        {
+          "Key": "transactionId",
+          "Value": 459633018
+        }
+      ],
+      "idtag": "",
+      "status": "",
+      "time": ""
+    }
+  ]
+}
