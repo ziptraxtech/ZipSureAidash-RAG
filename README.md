@@ -1,21 +1,129 @@
-Python version used is 3.12.0
+# 🚀 Getting Started
 
-install the dependencies by setting virtual env
+This guide will help you set up and run the project locally.
 
+---
+
+## 📋 Prerequisites
+
+Make sure the following tools are installed on your system:
+
+* **Node.js:** v18 or higher
+* **Python:** 3.12.0
+* **Package Manager:** npm or yarn
+
+You can verify installations using:
+
+```bash
+node -v
+python --version
+npm -v
+```
+
+---
+
+# ⚙️ Backend Setup (FastAPI)
+
+The backend of this project is powered by **FastAPI**.
+
+### 1. Navigate to the project root directory
+
+```bash
+cd project-directory
+```
+
+### 2. Create a virtual environment
+
+```bash
 python -m venv venv
+```
+
+### 3. Activate the virtual environment
+
+**macOS / Linux**
+
+```bash
 source venv/bin/activate
+```
 
-To install dependencies 
+**Windows**
+
+```bash
+.\venv\Scripts\activate
+```
+
+### 4. Install Python dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
+### 5. Start the FastAPI server
 
-For the running the backend which is connected through fastapi
-
+```bash
 uvicorn backend.main:app --reload
-(when application startup complete occurs then perform the following step.)
+```
+
+✅ Wait until you see:
+
+```
+Application startup complete
+```
 
 
-Start the app in a new terminal by reaching the directory using 
+# 💻 Frontend Setup (Next.js)
+
+Open **a new terminal window** while the backend is running.
+
+### 1. Install Node dependencies
+
+```bash
+npm install
+```
+
+### 2. Start the development server
+
+```bash
 npm run dev
+```
 
-Then go to http://localhost:3000
+
+The frontend server will run at:
+
+```
+http://localhost:3000
+```
+
+---
+
+# 🌐 Access the Application
+
+Once both servers are running, open your browser and visit:
+
+```
+http://localhost:3000
+```
+
+
+## Installation
+
+Install my-project with npm
+
+```bash
+npm install my-project
+cd my-project
+```
+
+## Usage/Examples
+
+```javascript
+import Component from 'my-project'
+
+function App() {
+  return <Component />
+}
+```
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
