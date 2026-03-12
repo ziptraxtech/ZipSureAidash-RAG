@@ -1,1 +1,0 @@
-from backend.main import app # This imports your app from the backend folder
