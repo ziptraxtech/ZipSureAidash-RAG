@@ -12,6 +12,15 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 
 load_dotenv()
 
+# Load RAG pipeline
+try:
+    from .rag_python import build_rag_chain
+    print("LOG: Successfully imported build_rag_chain")
+except Exception as e:
+    print(f"CRITICAL ERROR during import: {str(e)}")
+    print(traceback.format_exc())
+
+
 app = FastAPI()
 
 app.add_middleware(
@@ -21,35 +30,39 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Load RAG pipeline
-rag_chain = build_rag_chain()
-
 # Session chat histories
 chat_histories = {}
 
 @app.get("/chatbot")
 async def create_session():
+    print("LOG: GET /chatbot called")
     session_id = str(uuid4())
     chat_histories[session_id] = ChatMessageHistory()
+    print(f"LOG: Created session {session_id}")
     return {"session_id": session_id}
 
 
 @app.post("/ask")
 async def ask_question(data: dict):
+    print(f"LOG: POST /ask received data: {json.dumps(data)}")
+
     session_id = data.get("session_id")
     question = data.get("question")
-    
+
     if not question:
+        print("ERROR: No question provided in payload")
         raise HTTPException(status_code=400, detail="Question required")
 
-    # FIX: If session doesn't exist (because Vercel cleared memory), create it on the fly
+    # Session persistence logic
     if not session_id or session_id not in chat_histories:
+        print(f"LOG: Session {session_id} not found. Creating temporary history.")
         session_id = session_id or str(uuid4())
         chat_histories[session_id] = ChatMessageHistory()
 
     history = chat_histories[session_id]
 
+    print(f"LOG: Invoking conversational chain for session {session_id}")
+    
     conversational_chain = RunnableWithMessageHistory(
         rag_chain,
         lambda session: history,

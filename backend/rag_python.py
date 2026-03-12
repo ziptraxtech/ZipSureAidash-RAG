@@ -26,17 +26,17 @@ PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
 def load_json_documents():
     # 1. Get the directory where this script is located
-    current_dir = os.path.dirname(os.path.abspath(__file__))
+    base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     
     # 2. Build the path relative to this script
     # This assumes your JSON is in a folder named 'data' at the root
     # Adjust "../data/data_2ndmarch.json" based on where your file sits relative to this code
-    path = os.path.join(os.getcwd(), "data", "charts1.json")
-
+    path = os.path.join(base_path, "data", "charts1.json")
+    print(f"DEBUG: Looking for JSON at {path}")
     # Fallback for local testing if the relative path fails
     if not os.path.exists(path):
-        print(f"Warning: File not found at {path}, trying local fallback...")
-        path = "data/data_2ndmarch.json" 
+        print(f"ERROR: File not found at {path}")
+        return [] 
 
     try:
         with open(path, "r") as f:
@@ -57,11 +57,19 @@ def load_json_documents():
         return []
 
 def build_rag_chain():
+    print("DEBUG: Starting build_rag_chain...")
+    
+    # Check for keys early
+    if not GEMINI_API_KEY:
+        print("CRITICAL: GEMINI_API_KEY is missing!")
+    if not PINECONE_API_KEY:
+        print("CRITICAL: PINECONE_API_KEY is missing!")
+
     docs = load_json_documents()
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=2000,
-        chunk_overlap=100
+        chunk_overlap=400
     )
     splits = splitter.split_documents(docs)
 
