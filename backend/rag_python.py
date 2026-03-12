@@ -24,10 +24,6 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
-
-# -----------------------------
-# Load JSON analytics data
-# -----------------------------
 def load_json_documents():
     # 1. Get the directory where this script is located
     current_dir = os.path.dirname(os.path.abspath(__file__))
