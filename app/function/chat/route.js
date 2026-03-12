@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.VERCEL 
-  ? `https://${process.env.VERCEL_URL}/python_api` 
+  ? `https://${req.headers.get('host')}/python_api` 
   : 'http://127.0.0.1:8000';
 
 export const maxDuration = 60; 
