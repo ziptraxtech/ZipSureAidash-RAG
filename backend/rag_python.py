@@ -35,7 +35,7 @@ def load_json_documents():
     # 2. Build the path relative to this script
     # This assumes your JSON is in a folder named 'data' at the root
     # Adjust "../data/data_2ndmarch.json" based on where your file sits relative to this code
-    path = os.path.join(os.getcwd(), "data", "data_2ndmarch.json")
+    path = os.path.join(os.getcwd(), "data", "charts1.json")
 
     # Fallback for local testing if the relative path fails
     if not os.path.exists(path):
