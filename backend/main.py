@@ -16,7 +16,8 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://*.vercel.app"],
+    allow_origins=["*"], # For debugging, allow all. Tighten this later.
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -36,15 +37,16 @@ async def create_session():
 
 @app.post("/ask")
 async def ask_question(data: dict):
-
     session_id = data.get("session_id")
     question = data.get("question")
-    print(f"DEBUG: Received data: {data}") # Add this line!
-    if not session_id or not question:
-        raise HTTPException(status_code=400, detail="Session ID and question required")
+    
+    if not question:
+        raise HTTPException(status_code=400, detail="Question required")
 
-    if session_id not in chat_histories:
-        raise HTTPException(status_code=404, detail="Session not found")
+    # FIX: If session doesn't exist (because Vercel cleared memory), create it on the fly
+    if not session_id or session_id not in chat_histories:
+        session_id = session_id or str(uuid4())
+        chat_histories[session_id] = ChatMessageHistory()
 
     history = chat_histories[session_id]
 
