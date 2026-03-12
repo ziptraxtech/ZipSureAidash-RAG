@@ -1,8 +1,9 @@
 {
+  "version": 2,
   "rewrites": [
     {
-      "source": "/api/py/:path*",
-      "destination": "/api/index.py"
+      "source": "/python_api/:path*",
+      "destination": "/python_bridge/index.py"
     }
   ]
 }
