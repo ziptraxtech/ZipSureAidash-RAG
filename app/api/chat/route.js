@@ -3,10 +3,13 @@ import { NextResponse } from 'next/server';
 // AUTOMATIC URL SWITCH
 // On Vercel, it uses the shared /api/py path. 
 // Locally, it looks for your Uvicorn server on port 8000.
+// This ensures we always hit the correct domain
+const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+const host = process.env.VERCEL_URL || '127.0.0.1:8000';
 const BACKEND_URL = process.env.VERCEL 
-  ? `https://${process.env.VERCEL_URL}/api/py` 
-  : 'http://127.0.0.1:8000';
-
+  ? `${protocol}://${host}/api/py` 
+  : `http://127.0.0.1:8000`;
+  
 export const maxDuration = 60; // Allows up to 1 minute for the AI to think
 
 export async function POST(req) {
