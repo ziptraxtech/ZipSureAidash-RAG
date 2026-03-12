@@ -1,38 +1,35 @@
 import { NextResponse } from 'next/server';
 
-// AUTOMATIC URL DETECTION
-// 1. If we are on Vercel, it uses the shared internal path (/api/py)
-// 2. If we are local, it uses the Uvicorn port (127.0.0.1:8000)
+// AUTOMATIC URL SWITCH
+// On Vercel, it uses the shared /api/py path. 
+// Locally, it looks for your Uvicorn server on port 8000.
 const BACKEND_URL = process.env.VERCEL 
   ? `https://${process.env.VERCEL_URL}/api/py` 
   : 'http://127.0.0.1:8000';
 
+export const maxDuration = 60; // Allows up to 1 minute for the AI to think
+
 export async function POST(req) {
   try {
     const { messages } = await req.json();
-    const lastMessage = messages[messages.length - 1];
-    
-    // Check for session (using the smart URL)
+    const userQuestion = messages[messages.length - 1].content;
+
+    // 1. Get Session from Python
     const sessionRes = await fetch(`${BACKEND_URL}/chatbot`);
-    if (!sessionRes.ok) throw new Error("Backend session failed");
-    
     const { session_id } = await sessionRes.json();
 
-    // Call /ask
+    // 2. Ask RAG Question
     const askRes = await fetch(`${BACKEND_URL}/ask`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        session_id: session_id,
-        question: lastMessage.content
-      }),
+      body: JSON.stringify({ session_id, question: userQuestion }),
     });
 
     const pythonData = await askRes.json();
     return new Response(pythonData.response);
 
   } catch (error) {
-    console.error("Route Error:", error);
-    return new Response("Error: Could not connect to the AI assistant.", { status: 500 });
+    console.error("Connection Failed:", error.message);
+    return new Response("Assistant unreachable. Check if backend is running.", { status: 500 });
   }
 }
