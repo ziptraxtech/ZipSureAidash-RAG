@@ -28,31 +28,43 @@ PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 # -----------------------------
 # Load JSON analytics data
 # -----------------------------
-def load_json_documents(path="/Users/ujjwalchopra/Documents/ZIpsure/ZipboltDash-main(suhas)/data_2ndmarch.json"):
+def load_json_documents():
+    # 1. Get the directory where this script is located
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # 2. Build the path relative to this script
+    # This assumes your JSON is in a folder named 'data' at the root
+    # Adjust "../data/data_2ndmarch.json" based on where your file sits relative to this code
+    path = os.path.join(current_dir, "..", "data", "data_2ndmarch.json")
 
-    with open(path, "r") as f:
-        data = json.load(f)
+    # Fallback for local testing if the relative path fails
+    if not os.path.exists(path):
+        print(f"Warning: File not found at {path}, trying local fallback...")
+        path = "data/data_2ndmarch.json" 
 
-    documents = []
+    try:
+        with open(path, "r") as f:
+            data = json.load(f)
 
-    for key, value in data.items():
-
-        content = f"{key}: {value}"
-
-        documents.append(
-            Document(
-                page_content=content,
-                metadata={"source": "analytics_json"}
+        documents = []
+        for key, value in data.items():
+            content = f"{key}: {value}"
+            documents.append(
+                Document(
+                    page_content=content,
+                    metadata={"source": "analytics_json"}
+                )
             )
-        )
-
-    return documents
+        return documents
+    except Exception as e:
+        print(f"Error loading JSON: {e}")
+        return []
 
 def build_rag_chain():
     docs = load_json_documents()
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
+        chunk_size=2000,
         chunk_overlap=100
     )
     splits = splitter.split_documents(docs)
