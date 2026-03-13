@@ -25,33 +25,43 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
 def load_json_documents():
-    # 1. Get the directory where this script is located
     base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    
-    # 2. Build the path relative to this script
-    # This assumes your JSON is in a folder named 'data' at the root
-    # Adjust "../data/data_2ndmarch.json" based on where your file sits relative to this code
-    path = os.path.join(base_path, "data", "charts1.json")
+    path = os.path.join(base_path, "data", "data_2ndmarch.json")
     print(f"DEBUG: Looking for JSON at {path}")
-    # Fallback for local testing if the relative path fails
+
     if not os.path.exists(path):
         print(f"ERROR: File not found at {path}")
         return [] 
 
+    documents = []
     try:
-        with open(path, "r") as f:
+        with open(path, 'r') as f:
             data = json.load(f)
-
-        documents = []
-        for key, value in data.items():
-            content = f"{key}: {value}"
-            documents.append(
-                Document(
-                    page_content=content,
-                    metadata={"source": "analytics_json"}
-                )
-            )
-        return documents
+            
+            # If the JSON is a list (e.g., [ {"id": 1, "data": "..."}, {...} ])
+            if isinstance(data, list):
+                for item in data:
+                    # Convert the entire dictionary/item to a string for embedding
+                    content = json.dumps(item) 
+                    documents.append(
+                        Document(
+                            page_content=content,
+                            metadata={"source": "analytics_json"}
+                        )
+                    )
+            # If the JSON is a single dictionary
+            elif isinstance(data, dict):
+                for key, value in data.items():
+                    content = f"{key}: {value}"
+                    documents.append(
+                        Document(
+                            page_content=content,
+                            metadata={"source": "analytics_json"}
+                        )
+                    )
+            print(f"DEBUG: Successfully loaded {len(documents)} documents")
+            return documents
+            
     except Exception as e:
         print(f"Error loading JSON: {e}")
         return []
@@ -80,22 +90,18 @@ def build_rag_chain():
     pc = Pinecone(api_key=PINECONE_API_KEY)
 
     index_name = "zipcharger-analytics1"
+    
+    # Check if index exists, but DON'T upload documents here
     if index_name not in pc.list_indexes().names():
+        # If it doesn't exist, you should index locally once, not on Vercel
+        print(f"ERROR: Index {index_name} does not exist. Please index your data locally first.")
+        return None
 
-        pc.create_index(
-            name=index_name,
-            dimension=768,#Important: Must match embedding dimension while creating index at pinecone
-            metric="cosine",
-            spec=ServerlessSpec(
-                cloud="aws",
-                region="us-east-1"
-            )
-        )
-
-    vectorstore = PineconeVectorStore.from_documents(
-        documents=splits,
-        embedding=embeddings,
+    # Connect to the EXISTING vectorstore instead of creating from_documents
+    vectorstore = PineconeVectorStore(
         index_name=index_name,
+        embedding=embeddings,
+        pinecone_api_key=PINECONE_API_KEY
     )
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 4})

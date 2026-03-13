@@ -1,13 +1,8 @@
 {
-  "version": 2,
   "rewrites": [
     {
       "source": "/python_api/:path*",
       "destination": "/api/index.py"
-    },
-    {
-      "source": "/api/chat",
-      "destination": "/function/chat"
     }
   ]
 }

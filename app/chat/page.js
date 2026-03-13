@@ -9,49 +9,27 @@ import Markdown from "react-markdown";
 import { Loader2, Trash2, Bot, User } from "lucide-react";
 
 export default function Chat() {
-  // 1. STATE MANAGEMENT
   const [isTyping, setIsTyping] = useState(false);
-  const scrollRef = useRef(null);
   const messagesEndRef = useRef(null);
-
-  // Load saved messages from localStorage
-  const [initialMessages] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("chat-messages");
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
-
-  const {
-    messages,
-    input,
-    handleInputChange,
-    setMessages,
-  } = useChat({
-    initialMessages,
-  });
-
-  // 2. SMART SCROLL LOGIC
-  // This scrolls to the bottom only when messages or loading state changes
-  const prevMessagesLength = useRef(messages.length);
+  
+  // 1. HYDRATION FIX: Start with empty, load from storage in useEffect
+  const { messages, input, handleInputChange, setMessages } = useChat();
 
   useEffect(() => {
-    // Only scroll to bottom if a new message was added 
-    // OR if the AI starts thinking (isTyping becomes true)
-    if (messages.length > prevMessagesLength.current || isTyping) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const saved = localStorage.getItem("chat-messages");
+    if (saved) {
+      setMessages(JSON.parse(saved));
     }
-    
-    // Update the ref to the current length for the next render
-    prevMessagesLength.current = messages.length;
+  }, [setMessages]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem("chat-messages", JSON.stringify(messages));
+    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
-    // Save messages to localStorage
-  useEffect(() => {
-    localStorage.setItem("chat-messages", JSON.stringify(messages));
-  }, [messages]);
 
-  // 3. HANDLERS
+  // 2. HANDLERS
   const clearChat = () => {
     setMessages([]);
     localStorage.removeItem("chat-messages");
@@ -61,7 +39,6 @@ export default function Chat() {
     event.preventDefault();
     if (!input.trim() || isTyping) return;
 
-    // Add user message to UI
     const userMessage = { 
       id: Date.now().toString(), 
       role: "user", 
@@ -71,10 +48,9 @@ export default function Chat() {
     setMessages((prev) => [...prev, userMessage]);
     const currentInput = input;
     
-    // Clear the input field immediately
+    // Clear the input field
     handleInputChange({ target: { value: "" } }); 
-    
-    setIsTyping(true); // Show loading indicator
+    setIsTyping(true);
 
     try {
       const response = await fetch('/api/chat', {
@@ -87,126 +63,105 @@ export default function Chat() {
 
       if (!response.ok) throw new Error("Backend connection failed");
 
-      const aiText = await response.text();
+      // --- CRITICAL CHANGE HERE ---
+      // We parse as JSON, not Text
+      const data = await response.json();
 
-      // Add assistant message to UI
       setMessages((prev) => [
         ...prev,
         { 
           id: (Date.now() + 1).toString(), 
           role: "assistant", 
-          content: aiText 
+          content: data.content // Access the content property specifically
         }
       ]);
     } catch (err) {
       console.error("Chat Error:", err);
-      // Optional: Add an error message to the chat
+      setMessages((prev) => [
+        ...prev,
+        { 
+          id: Date.now().toString(), 
+          role: "assistant", 
+          content: "⚠️ I'm having trouble connecting to the analytics engine. Please try again." 
+        }
+      ]);
     } finally {
-      setIsTyping(false); // Hide loading indicator
+      setIsTyping(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      
+    <div className="flex flex-col h-screen bg-slate-50">
       {/* HEADER */}
-      <div className="w-full border-b bg-white shadow-sm">
+      <div className="w-full border-b bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <Bot className="text-blue-600" />
-            <h1 className="font-semibold text-lg">ZipSure AI Assistant</h1>
+            <h1 className="font-semibold text-lg text-slate-800">ZipSure AI Assistant</h1>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={clearChat}
-            className="flex items-center gap-1"
-          >
-            <Trash2 size={14} />
-            Clear
+          <Button variant="ghost" size="sm" onClick={clearChat} className="text-slate-500 hover:text-red-600">
+            <Trash2 size={16} className="mr-1" /> Clear
           </Button>
         </div>
       </div>
 
       {/* CHAT AREA */}
-      <div className="flex-1 overflow-hidden px-4 py-4">
-        <div className="max-w-4xl mx-auto h-full flex flex-col">
-          <ScrollArea className="flex-1 rounded-xl bg-white shadow p-4 overflow-y-auto">
-            <div className="space-y-4 pr-2">
+      <div className="flex-1 overflow-hidden">
+        <div className="max-w-4xl mx-auto h-full flex flex-col p-4">
+          <ScrollArea className="flex-1 pr-4">
+            <div className="space-y-6 pb-4">
               {messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`flex gap-3 ${
-                    m.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
+                <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   {m.role === "assistant" && (
-                    <div className="flex items-start">
-                      <div className="bg-blue-600 text-white p-2 rounded-full">
-                        <Bot size={16} />
-                      </div>
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                      <Bot size={18} />
                     </div>
                   )}
 
-                  <div
-                    className={`max-w-[75%] rounded-xl px-4 py-3 text-sm shadow-sm ${
-                      m.role === "user"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-900"
-                    }`}
-                  >
-                    <div className="leading-relaxed whitespace-pre-wrap">
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] ${
+                    m.role === "user" ? "bg-blue-600 text-white shadow-md" : "bg-white border border-slate-200 text-slate-800 shadow-sm"
+                  }`}>
+                    {/* MARKDOWN RENDERING */}
+                    <div className="prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed">
                       <Markdown>{m.content}</Markdown>
                     </div>
                   </div>
 
                   {m.role === "user" && (
-                    <div className="flex items-start">
-                      <div className="bg-black text-white p-2 rounded-full">
-                        <User size={16} />
-                      </div>
+                    <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-white shrink-0">
+                      <User size={18} />
                     </div>
                   )}
                 </div>
               ))}
 
-              {/* Loading indicator inside the scrollable area */}
               {isTyping && (
-                <div className="flex items-center gap-2 text-gray-500 py-2">
-                  <Loader2 className="animate-spin" size={18} />
-                  <span className="text-xs italic">ZipSure AI is thinking...</span>
+                <div className="flex items-center gap-3 animate-pulse">
+                  <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-400">
+                    <Loader2 className="animate-spin" size={18} />
+                  </div>
+                  <span className="text-sm text-slate-400">Analyzing charger data...</span>
                 </div>
               )}
-
-              {/* Invisible anchor for scrolling */}
-              <div ref={messagesEndRef} className="h-1" />
+              <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
         </div>
       </div>
 
       {/* INPUT AREA */}
-      <div className="w-full border-t bg-white">
-        <form
-          className="max-w-4xl mx-auto px-4 py-4"
-          onSubmit={onHandleSubmit}
-        >
-          <div className="flex gap-2">
-            <Input
-              value={input}
-              placeholder="Ask about charger analytics..."
-              onChange={handleInputChange}
-              className="flex-1"
-              disabled={isTyping}
-            />
-            <Button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              disabled={isTyping || !input.trim()}
-            >
-              {isTyping ? <Loader2 className="animate-spin" size={18} /> : "Send"}
-            </Button>
-          </div>
+      <div className="w-full bg-white border-t p-4">
+        <form className="max-w-4xl mx-auto flex gap-3" onSubmit={onHandleSubmit}>
+          <Input
+            value={input}
+            placeholder="e.g. What is the voltage of charger 0323...?"
+            onChange={handleInputChange}
+            className="flex-1 h-12 bg-slate-50 border-slate-200 focus-visible:ring-blue-600"
+            disabled={isTyping}
+          />
+          <Button type="submit" className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white" disabled={isTyping || !input.trim()}>
+            {isTyping ? <Loader2 className="animate-spin" size={20} /> : "Send"}
+          </Button>
         </form>
       </div>
     </div>
