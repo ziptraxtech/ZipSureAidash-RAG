@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { FaHome, FaChartBar, FaTable, FaBars } from "react-icons/fa";
+import { FaHome, FaChartBar, FaTable } from "react-icons/fa";
 import Sidebar from "@/components/Sidebar";
 import { ClerkProvider } from "@clerk/nextjs";
 
@@ -9,20 +9,19 @@ export const metadata = {
   description: "Zipsure AI",
 };
 
-const menuItems = [
-  { name: "Home", icon: <FaHome />, href: "#dashboard" },
-  { name: "Analytics", icon: <FaChartBar />, href: "#analytics" },
-  { name: "Reports", icon: <FaTable />, href: "#reports" },
-];
+// Moving these inside a component or keeping them here is fine, 
+// but ensure Sidebar is client-safe.
 
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body className="bg-gray-200">
-          <div>
+      <html lang="en" suppressHydrationWarning>
+        <body className="bg-gray-200" suppressHydrationWarning>
+          <div className="flex"> 
             <Sidebar />
-            <div className="ml-20">{children}</div>
+            <main className="flex-1 ml-20">
+              {children}
+            </main>
           </div>
         </body>
       </html>
