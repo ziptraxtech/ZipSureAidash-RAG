@@ -111,3 +111,9 @@
   --sidebar-border: hsl(0 0% 100% / 0.1);
   --sidebar-ring: hsl(0 0% 55.6%);
 }
+
+@media screen {
+  .no-print {
+    display: block;
+  }
+}/* For pdf export */
