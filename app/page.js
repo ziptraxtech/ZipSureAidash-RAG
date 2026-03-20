@@ -1,322 +1,255 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import LiveIndicator from "@/components/LiveIndicator";
-import { FaSearch, FaCalendarAlt } from "react-icons/fa";
-import TopNavigationBar from "@/components/TopNavigationBar";
-import ChargerMap from "@/components/ChargerMap";
+import { ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { FaMapMarkerAlt, FaBolt, FaExternalLinkAlt } from "react-icons/fa";
 
-import {
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-} from "recharts";
-
-
-// STATE OF HEALTH DATA
-const stateOfHealthData = [
-  { name: "Healthy", value: 92 },
-  { name: "Degraded", value: 8 },
-];
-
-const COLORS_HEALTH = ["#10b981", "#ef4444"];
-const currentPower = 823;
-const voltage = 259;
-const revenue = 4200;
-const sessionTime = "00:24:10";
-
-
-const chargerStatus = {
-  online: 1,
-  offline: 0,
-  charging: 1,
-  maintenance: 0,
-};
-
-
-const chargerDetails = {
-  address: "Sector 17 Market, Chandigarh, India",
-  status: "Online",
-};
-
+// Disable SSR for Map and Nav to prevent hydration mismatches
+const TopNavigationBar = dynamic(() => import('@/components/TopNavigationBar'), { ssr: false });
+const ChargerMap = dynamic(() => import('@/components/MapComponent'), { ssr: false });
 
 export default function DashboardPage() {
+  const [rawData, setRawData] = useState({ points: [], metadata: {} });
+  const [loading, setLoading] = useState(true);
+  const [hasMounted, setHasMounted] = useState(false);
 
+  useEffect(() => {
+    setHasMounted(true);
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/api/sapna_charger");
+        const result = await response.json();
+        setRawData(result);
+      } catch (error) { 
+        console.error("Fetch error:", error); 
+      } finally { 
+        setLoading(false); 
+      }
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const metrics = useMemo(() => {
+    const points = rawData.points || [];
+    const metadata = rawData.metadata || {};
+    
+    if (!hasMounted || !points.length) return null;
+
+    const last = points[points.length - 1];
+    const first = points[0];
+
+    // 1. FIXED: SESSION TIME LOGIC
+    // We calculate duration strictly based on the data points in the JSON
+    const startTime = new Date(first.datetime);
+    const endTime = new Date(last.datetime);
+    const diff = Math.max(0, endTime - startTime);
+    
+    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+
+    // 2. FIXED: LAST SEEN LOGIC
+    // Using your split logic to extract the time string safely from the ISO format
+    const lastSeenTime = last.datetime?.split('T')[1]?.substring(0, 5) || "--:--";
+
+    // 3. SOH & ENERGY LOGIC
+    const startMeter = metadata.meterstart || 0;
+    const deltaSoc = (last.soc || 0) - (first.soc || 0);
+    const deltaE = Math.max(0, (last.energy - startMeter) / 1000); // Wh to kWh
+    
+    let soh = 100;
+    if (deltaSoc > 1) {
+      // Simplified SOH placeholder logic
+      const rawSoh = ((deltaE * 0.9) / (deltaSoc / 100) / 60) * 100;
+      soh = Math.min(100, Math.max(0, (100 - rawSoh))).toFixed(1);
+    }
+
+    // 4. STATUS LOGIC
+    // If the last data point is older than 10 minutes relative to "now", mark offline
+    const now = new Date();
+    const isStale = (now - endTime) / 1000 > 600; 
+    
+    let counts = { online: 0, offline: 0, charging: 0, maintenance: 0 };
+    if (isStale) { 
+      counts.offline = 1; 
+    } else {
+      counts.online = 1;
+      if ((last.current || 0) > 0.1) counts.charging = 1;
+    }
+
+    return {
+      lastCurrent: (last.current || 0).toFixed(2),
+      soh: soh,
+      lastVoltage: last.voltage_inlet || 230,
+      endEnergy: deltaE.toFixed(2),
+      sessionTime: `${h}:${m}:${s}`,
+      lastSeen: lastSeenTime,
+      counts
+    };
+  }, [rawData, hasMounted]);
+
+  if (!hasMounted) return <div className="p-10 text-center bg-slate-50 min-h-screen">Initializing...</div>;
+  // if (loading) return <div className="p-10 text-center animate-pulse bg-slate-50 min-h-screen font-bold text-slate-400 uppercase tracking-widest">Syncing Telemetry...</div>;
+  if (loading && !rawData.points.length) {
+      return <div className="p-10 text-center animate-pulse bg-slate-50 min-h-screen font-bold text-slate-400">SYNCING TELEMETRY...</div>;
+    }
   return (
-    <div className="p-6 space-y-6">
-
+    <div className="p-6 space-y-8 bg-slate-50 min-h-screen">
       <TopNavigationBar />
+      
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-black text-slate-800 tracking-tight">EV Charger B2B Dashboard</h1>
+        <Badge className="bg-white text-slate-400 border-slate-200 uppercase text-[10px] font-bold">Live Feed</Badge>
+      </div>
 
+      {/* 5 KPI Top Row */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <KPIBox title="State of Health">
+          <div className="h-16 w-16 relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={[{v: parseFloat(metrics?.soh ?? 0)}, {v: 100 - parseFloat(metrics?.soh ?? 0)}]} dataKey="v" innerRadius={18} outerRadius={28} stroke="none">
+                  <Cell fill="#10b981" /><Cell fill="#f1f5f9" />
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-slate-600">{metrics?.soh ?? 0}%</span>
+          </div>
+          <span className="text-2xl font-black ml-4">{metrics?.soh ?? 0}%</span>
+        </KPIBox>
 
+        <KPIBox title="Last Current">
+          <span className="text-3xl font-black text-blue-600 tracking-tighter">{metrics?.lastCurrent ?? "0.00"} <span className="text-xs text-slate-400">A</span></span>
+        </KPIBox>
 
-      {/* HEADER */}
+        <KPIBox title="Last Voltage">
+          <span className="text-3xl font-black text-purple-600 tracking-tighter">{metrics?.lastVoltage ?? "0"} <span className="text-xs text-slate-400">V</span></span>
+        </KPIBox>
 
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <KPIBox title="Energy (End)">
+          <span className="text-3xl font-black text-emerald-600 tracking-tighter">{metrics?.endEnergy ?? "0.00"} <span className="text-xs text-slate-400">kWh</span></span>
+        </KPIBox>
 
-        <h1 className="text-2xl font-bold">
-          EV Charger B2B Dashboard
-        </h1>
+        <KPIBox title="Session Time">
+          <span className="text-3xl font-black text-orange-500 font-mono tracking-tighter">{metrics?.sessionTime ?? "00:00:00"}</span>
+        </KPIBox>
+      </div>
 
-        <div className="flex items-center gap-3">
-
-          <FaSearch />
-          <FaCalendarAlt />
-
-          <Badge className="bg-black text-white px-4 py-2 rounded-full">
-            2026-03-01
-          </Badge>
-
-          <Badge className="bg-black text-white px-4 py-2 rounded-full">
-            2026-03-07
-          </Badge>
-
-          <Button className="bg-white text-black rounded-full">
-            Export
-          </Button>
-
+      {/* Bottom Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Occupancy */}
+          <div className="space-y-4">
+          <h3 className="text-sm font-bold text-slate-800">Charger Occupancy</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <StatusTile 
+              label="Online" 
+              count={metrics?.counts?.online ?? 0} 
+              isActive={metrics?.counts?.online > 0}
+              colorScheme="green"
+            />
+            <StatusTile 
+              label="Offline" 
+              count={metrics?.counts?.offline ?? 0} 
+              isActive={metrics?.counts?.offline > 0}
+              colorScheme="red"
+            />
+            <StatusTile 
+              label="Charging" 
+              count={metrics?.counts?.charging ?? 0} 
+              isActive={metrics?.counts?.charging > 0}
+              colorScheme="blue"
+            />
+            <StatusTile 
+              label="Under Maintenance" 
+              count={metrics?.counts?.maintenance ?? 0} 
+              isActive={metrics?.counts?.maintenance > 0}
+              colorScheme="yellow"
+            />
+          </div>
         </div>
 
-      </div>
-
-
-
-      {/* KPI CARDS */}
-
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-
-
-        {/* STATE OF HEALTH */}
-
-        <Card>
-
-          <CardHeader>
-            <CardTitle>State of Health</CardTitle>
-          </CardHeader>
-
-          <CardContent className="h-40">
-
-            <ResponsiveContainer width="100%" height="100%">
-
-              <PieChart>
-
-                <Pie
-                  data={stateOfHealthData}
-                  dataKey="value"
-                  outerRadius={60}
-                  label
-                >
-
-                  {stateOfHealthData.map((entry, index) => (
-                    <Cell
-                      key={index}
-                      fill={COLORS_HEALTH[index]}
-                    />
-                  ))}
-
-                </Pie>
-
-                <Tooltip />
-
-              </PieChart>
-
-            </ResponsiveContainer>
-
-          </CardContent>
-
-        </Card>
-
-
-
-        {/* CURRENT POWER */}
-
-        <Card>
-
-          <CardHeader>
-                <CardTitle>Current Power</CardTitle>
-
-          <LiveIndicator />
-          </CardHeader>
-
-          <CardContent className="text-3xl font-bold text-blue-600">
-            {currentPower} W
-          </CardContent>
-
-        </Card>
-
-
-
-        {/* REVENUE */}
-
-        <Card>
-
-          <CardHeader>
-            <CardTitle>Revenue Generated</CardTitle>
-          </CardHeader>
-
-          <CardContent className="text-3xl font-bold text-green-600">
-            ₹ {revenue}
-          </CardContent>
-
-        </Card>
-
-
-
-        {/* VOLTAGE */}
-
-        <Card>
-
-          <CardHeader>
-            <CardTitle>Voltage</CardTitle>
-          </CardHeader>
-
-          <CardContent className="text-3xl font-bold text-purple-600">
-            {voltage} V
-          </CardContent>
-
-        </Card>
-
-
-
-        {/* CURRENT SESSION TIME */}
-
-        <Card>
-
-          <CardHeader>
-            <CardTitle>Current Session Time</CardTitle>
-          </CardHeader>
-
-          <CardContent className="text-3xl font-bold text-orange-600">
-            {sessionTime}
-          </CardContent>
-
-        </Card>
-
-      </div>
-
-
-
-      {/* CHARGER STATUS + DETAILS */}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-
-        {/* CHARGER OCCUPANCY */}
-
-        <Card>
-
-          <CardHeader>
-            <CardTitle>Charger Occupancy</CardTitle>
-          </CardHeader>
-
-          <CardContent>
-
-            <div className="grid grid-cols-2 gap-4 text-center">
-
-              <div className="p-4 bg-green-100 rounded-lg">
-                <p className="text-sm">Online</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {chargerStatus.online}
-                </p>
-              </div>
-
-              <div className="p-4 bg-red-100 rounded-lg">
-                <p className="text-sm">Offline</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {chargerStatus.offline}
-                </p>
-              </div>
-
-              <div className="p-4 bg-blue-100 rounded-lg">
-                <p className="text-sm">Charging</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {chargerStatus.charging}
-                </p>
-              </div>
-
-              <div className="p-4 bg-yellow-100 rounded-lg">
-                <p className="text-sm">Under Maintenance</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {chargerStatus.maintenance}
-                </p>
-              </div>
-
+        {/* DEVICE MAP CARD */}
+        <Card className="rounded-3xl border-none shadow-xl shadow-slate-200/60 overflow-hidden bg-white">
+          <div className="p-5 border-b border-slate-50 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-100"><FaMapMarkerAlt size={14} /></div>
+              <span className="font-black text-slate-800 text-sm tracking-tight uppercase">Live Device Location</span>
             </div>
+            <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-slate-200 text-slate-400 px-3 py-1">Okhla IE, New Delhi</Badge>
+          </div>
 
-          </CardContent>
-
-        </Card>
-
-
-
-        {/* CHARGER DETAILS */}
-
-        <Card>
-
-          <CardHeader>
-            <CardTitle>Charger Details</CardTitle>
-          </CardHeader>
-
-          <CardContent className="space-y-4">
-
-
-            {/* ADDRESS */}
-
-            <div>
-
-              <p className="text-sm text-gray-500">
-                Address
-              </p>
-
-              <div className="flex items-center gap-3">
-
-                <p className="font-medium">
-                  {chargerDetails.address}
-                </p>
-
-                <Badge
-                  className={`${
-                    chargerDetails.status === "Online"
-                      ? "bg-green-600"
-                      : "bg-red-600"
-                  } text-white`}
-                >
-                  {chargerDetails.status}
-                </Badge>
-
+          <div className="h-[380px] relative">
+            <ChargerMap />
+            
+            {/* Map Overlay */}
+            <div className="absolute bottom-6 left-6 z-[1000] w-64 bg-white/90 backdrop-blur-xl shadow-2xl rounded-2xl border border-white/50 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Live Terminal</span>
+                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black ${metrics?.counts?.online ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${metrics?.counts?.online ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                  {metrics?.counts?.online ? 'ONLINE' : 'OFFLINE'}
+                </div>
+              </div>
+              
+              <div className="space-y-0.5 mb-4">
+                <p className="text-base font-black text-slate-900 leading-none">Sapna Terminal - 01</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Device ID: ZIP-SAPNA-01</p>
               </div>
 
+              <div className="space-y-2">
+                <div className="flex justify-between items-end">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase">Health Score</p>
+                  <p className="text-sm font-black text-emerald-500">{metrics?.soh ?? 0}%</p>
+                </div>
+                <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500" style={{ width: `${metrics?.soh ?? 0}%` }} />
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-slate-400 font-bold text-[9px]">
+                <span>Last Sync: {metrics?.lastSeen ?? "--:--"}</span>
+                <button onClick={() => window.open(`https://www.google.com/maps?q=28.5594,77.2444`, '_blank')} className="text-blue-600 flex items-center gap-1 uppercase hover:underline">Navigate <FaExternalLinkAlt size={8} /></button>
+              </div>
             </div>
-
-
-
-            {/* GOOGLE MAP */}
-
-            <div>
-
-              <p className="text-sm text-gray-500 mb-2">
-                Location of the Charger
-              </p>
-
-              <ChargerMap />
-
-            </div>
-
-          </CardContent>
-
+          </div>
         </Card>
-
       </div>
+    </div>
+  );
+}
 
+function KPIBox({ title, children }) {
+  return (
+    <Card className="rounded-2xl border-none shadow-sm p-5 flex flex-col justify-between min-h-[140px] bg-white">
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{title}</p>
+      <div className="mt-auto flex items-center">{children}</div>
+    </Card>
+  );
+}
+
+function StatusTile({ label, count, colorScheme }) {
+  const schemes = {
+    green: { bg: "bg-[#eefcf3]", text: "text-[#10b981]", border: "border-[#dcfce7]" },
+    red: { bg: "bg-[#fff1f2]", text: "text-[#f43f5e]", border: "border-[#ffe4e6]" },
+    blue: { bg: "bg-[#eff6ff]", text: "text-[#3b82f6]", border: "border-[#dbeafe]" },
+    yellow: { bg: "bg-[#fefce8]", text: "text-[#eab308]", border: "border-[#fef9c3]" },
+  };
+
+  const current = schemes[colorScheme];
+
+  return (
+    <div className={`p-6 rounded-2xl border transition-all duration-300 flex flex-col items-center justify-center ${current.bg} ${current.border}`}>
+      <span className={`text-[11px] font-bold mb-1 ${current.text}`}>
+        {label}
+      </span>
+      <span className={`text-4xl font-black tracking-tighter ${current.text}`}>
+        {count}
+      </span>
     </div>
   );
 }
