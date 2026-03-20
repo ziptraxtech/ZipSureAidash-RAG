@@ -43,3 +43,6 @@ zipsureai-e1cddda01936.json
 /.clerk/
 .env*.local
 venv/
+__pycache__/
+*.pyc
+.env
