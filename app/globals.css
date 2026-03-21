@@ -117,3 +117,10 @@
     display: block;
   }
 }/* For pdf export */
+
+@layer utilities {
+  .zipsure-gradient {
+    /* A deep, modern blue gradient */
+    background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 50%, #2563eb 100%);
+  }
+}

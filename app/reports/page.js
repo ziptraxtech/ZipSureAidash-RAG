@@ -1,191 +1,3 @@
-// "use client";
-
-// import { useState, useEffect, useMemo } from "react";
-// import dynamic from "next/dynamic";
-// import {
-//   XAxis,
-//   YAxis,
-//   CartesianGrid,
-//   Tooltip,
-//   ResponsiveContainer,
-//   LineChart,
-//   Line,
-//   AreaChart,
-//   Area
-// } from "recharts";
-
-// const TopNavigationBar = dynamic(() => import('@/components/TopNavigationBar'), { 
-//   ssr: false,
-//   loading: () => <div className="h-16 w-full animate-pulse bg-slate-100 rounded-full mb-6" /> 
-// });
-
-// export default function ReportsPage() {
-//   const [mounted, setMounted] = useState(false);
-//   const [loading, setLoading] = useState(true);
-//   const [reportData, setReportData] = useState({ metadata: {}, points: [] });
-
-//   // Pricing Constants
-//   const TARIFF_RATE = 15; 
-//   const COST_RATE = 5;    
-
-//   useEffect(() => {
-//     setMounted(true);
-//     const fetchData = async () => {
-//       try {
-//         const response = await fetch("/api/sapna_charger");
-//         const result = await response.json();
-//         setReportData(result);
-//       } catch (error) {
-//         console.error("Fetch Error:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//     const interval = setInterval(fetchData, 100000);
-//     return () => clearInterval(interval);
-//   }, []);
-
-//   const processed = useMemo(() => {
-//     const points = reportData.points || [];
-//     const metadata = reportData.metadata || {};
-    
-//     if (points.length === 0) {
-//       return { chart: [], kpi: { sessions: 0, energy: 0, revenue: 0, netIncome: 0, co2Saved: 0 } };
-//     }
-
-//     const startMeter = metadata.meterstart || 0;
-    
-//     // 1. Map the points to our chart structure
-//     const chartData = points.map((item) => {
-//       // Use your splitting logic for the X-Axis Label
-//       const displayTime = item.datetime?.split('T')[1]?.substring(0, 8) || "00:00:00";
-
-//       // 2. Calculate kWh consumed at THIS specific point
-//       // (Current Meter Reading - Start Meter Reading) / 1000
-//       const currentWh = item.energy || startMeter;
-//       const kwhAtPoint = Math.max(0, (currentWh - startMeter) / 1000);
-      
-//       const pointRevenue = kwhAtPoint * TARIFF_RATE;
-//       const pointNetIncome = pointRevenue - (kwhAtPoint * COST_RATE);
-
-//       return {
-//         time: displayTime,
-//         revenue: parseFloat(pointRevenue.toFixed(2)),
-//         netIncome: parseFloat(pointNetIncome.toFixed(2)),
-//         energy: parseFloat(kwhAtPoint.toFixed(3))
-//       };
-//     });
-
-//     // 3. Final KPI Summaries (using the very last point)
-//     const finalPoint = chartData[chartData.length - 1];
-//     const totalKwh = finalPoint.energy;
-//     const totalRevenue = finalPoint.revenue;
-//     const totalNetIncome = finalPoint.netIncome;
-
-//     return {
-//       chart: chartData,
-//       kpi: {
-//         sessions: metadata.idtag ? 1 : 0, 
-//         energy: totalKwh.toFixed(3), 
-//         revenue: totalRevenue.toFixed(2),
-//         netIncome: totalNetIncome.toFixed(2),
-//         co2Saved: (totalKwh * 0.85).toFixed(2)
-//       }
-//     };
-//   }, [reportData]);
-
-//   if (!mounted) return null;
-
-//   if (loading && reportData.points.length === 0) {
-//     return <div className="p-20 text-center font-black animate-pulse text-slate-400">SYNCING REVENUE DATA...</div>;
-//   }
-
-//   return (
-//     <div className="p-6 space-y-6 bg-slate-50 min-h-screen font-sans">
-//       <TopNavigationBar />
-//       <div id="analytics-report-area" className="bg-white p-10 rounded-[2.5rem] mt-4 shadow-sm border border-slate-100">
-
-//       <div className="space-y-10 bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100 mt-4">
-//         <div className="flex justify-between items-start border-b border-slate-100 pb-8">
-//           <div>
-//             <h2 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Financial Performance</h2>
-//             <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mt-1">
-//               Transaction: {reportData.metadata?.idtag || "N/A"}
-//             </p>
-//           </div>
-//           <div className="text-right">
-//              <p className="text-[10px] font-black text-slate-300 uppercase leading-none">Billing Verified</p>
-//              <p className="text-xs font-bold text-slate-500 tracking-tight">Rate: ₹{TARIFF_RATE}/kWh</p>
-//           </div>
-//         </div>
-
-//         {/* KPI Row */}
-//         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-//           <StatCard title="Active Sessions" value={processed.kpi.sessions} />
-//           <StatCard title="Energy Dispensed" value={`${processed.kpi.energy} kWh`} />
-//           <StatCard title="Gross Revenue" value={`₹${processed.kpi.revenue}`} color="text-blue-600" />
-//           <StatCard title="Net Income" value={`₹${processed.kpi.netIncome}`} color="text-[#10b981]" />
-//           <StatCard title="Carbon Offset" value={`${processed.kpi.co2Saved} kg`} />
-//         </div>
-
-//         {/* Charts Section */}
-//         <div className="grid grid-cols-1 gap-12">
-          
-//           <ChartBox title="Gross Revenue Accrual (₹)">
-//             <AreaChart data={processed.chart}>
-//               <defs>
-//                 <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-//                   <stop offset="5%" stopColor="#2563eb" stopOpacity={0.1}/>
-//                   <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
-//                 </linearGradient>
-//               </defs>
-//               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-//               <XAxis dataKey="time" tick={{fontSize: 10, fontWeight: 'bold', fill: '#cbd5e1'}} axisLine={false} tickLine={false} />
-//               <YAxis tick={{fontSize: 10, fontWeight: 'bold', fill: '#cbd5e1'}} axisLine={false} tickLine={false} />
-//               <Tooltip />
-//               <Area type="monotone" dataKey="revenue" stroke="#2563eb" fillOpacity={1} fill="url(#colorRev)" strokeWidth={3} />
-//             </AreaChart>
-//           </ChartBox>
-
-//           <ChartBox title="Net Income Accumulation (₹)">
-//             <LineChart data={processed.chart}>
-//               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-//               <XAxis dataKey="time" tick={{fontSize: 10, fontWeight: 'bold', fill: '#cbd5e1'}} axisLine={false} tickLine={false} />
-//               <YAxis tick={{fontSize: 10, fontWeight: 'bold', fill: '#cbd5e1'}} axisLine={false} tickLine={false} />
-//               <Tooltip />
-//               <Line type="stepAfter" dataKey="netIncome" stroke="#10b981" strokeWidth={4} dot={false} />
-//             </LineChart>
-//           </ChartBox>
-
-//         </div>
-//       </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function StatCard({ title, value, color = "text-slate-900" }) {
-//   return (
-//     <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-//       <p className="text-[9px] uppercase text-slate-400 font-black tracking-widest mb-2">{title}</p>
-//       <p className={`text-xl font-black ${color}`}>{value}</p>
-//     </div>
-//   );
-// }
-
-// function ChartBox({ title, children }) {
-//   return (
-//     <div className="space-y-6">
-//       <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] px-2">{title}</h3>
-//       <div className="h-80 w-full bg-slate-50/50 rounded-3xl p-6 border border-slate-50">
-//         <ResponsiveContainer width="100%" height="100%">{children}</ResponsiveContainer>
-//       </div>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -201,6 +13,9 @@ import {
   AreaChart,
   Area
 } from "recharts";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Wallet, TrendingUp, Leaf, Zap, BarChart3, Activity } from 'lucide-react';
 
 const TopNavigationBar = dynamic(() => import('@/components/TopNavigationBar'), { 
   ssr: false,
@@ -212,7 +27,6 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState({ metadata: {}, points: [] });
   
-  // States for Universal Filtering
   const [selectedDate, setSelectedDate] = useState(new Date("2026-03-13"));
   const [viewRange, setViewRange] = useState("day");
 
@@ -239,38 +53,25 @@ export default function ReportsPage() {
     const allPoints = reportData.points || [];
     const metadata = reportData.metadata || {};
 
-    // UNIVERSAL FILTERING LOGIC
     const filteredPoints = allPoints.filter(p => {
       const pDate = new Date(p.datetime);
-      
-      // Normalize dates to remove time for accurate day-by-day comparison
       const selected = new Date(selectedDate);
       selected.setHours(0, 0, 0, 0);
-      
       const current = new Date(pDate);
       current.setHours(0, 0, 0, 0);
 
-      if (viewRange === "day") {
-        return current.getTime() === selected.getTime();
-      }
-
+      if (viewRange === "day") return current.getTime() === selected.getTime();
       if (viewRange === "week") {
         const sevenDaysAgo = new Date(selected);
         sevenDaysAgo.setDate(selected.getDate() - 7);
         return current >= sevenDaysAgo && current <= selected;
       }
-
       if (viewRange === "month") {
-        return (
-          current.getMonth() === selected.getMonth() &&
-          current.getFullYear() === selected.getFullYear()
-        );
+        return current.getMonth() === selected.getMonth() && current.getFullYear() === selected.getFullYear();
       }
-
       return true;
     });
     
-    // EMPTY STATE HANDLER
     if (filteredPoints.length === 0) {
       return { 
         chart: [], 
@@ -280,9 +81,8 @@ export default function ReportsPage() {
     }
 
     const startMeter = metadata.meterstart || 0;
-    
     const chartData = filteredPoints.map((item) => {
-      const displayTime = item.datetime?.split('T')[1]?.substring(0, 8) || "00:00:00";
+      const displayTime = item.datetime?.split('T')[1]?.substring(0, 5) || "00:00";
       const currentWh = item.energy || startMeter;
       const kwhAtPoint = Math.max(0, (currentWh - startMeter) / 1000);
       
@@ -312,63 +112,70 @@ export default function ReportsPage() {
   if (!mounted) return null;
 
   return (
-    <div className="p-6 space-y-6 bg-slate-50 min-h-screen font-sans">
+    <div className="bg-[#F8FAFC] min-h-screen font-sans w-full pb-12">
       <TopNavigationBar 
         onDateChange={setSelectedDate} 
         onRangeChange={setViewRange}
         exportId="analytics-report-area"
       />
 
-      <div id="analytics-report-area" className="bg-white p-10 rounded-[2.5rem] mt-4 shadow-sm border border-slate-100">
-        <div className="flex justify-between items-start border-b border-slate-100 pb-8 mb-10">
-          <div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">Financial Intelligence</h2>
-            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mt-1">
-              {processed.hasData ? `Transaction: ${reportData.metadata?.idtag}` : "No Active Transaction for this period"}
-            </p>
+      {/* Center Aligned Container */}
+      <div id="analytics-report-area" className="p-8 max-w-[1600px] mx-auto space-y-8">
+        
+        {/* Header Branding Section */}
+        <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="space-y-2 text-center md:text-left">
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase ">Financial report</h1>
+            <p className="text-slate-500 text-sm font-medium">Monitor the revenue and profit generation </p>
+            <div className="flex flex-wrap justify-center md:justify-start gap-2 pt-2">
+              <Badge variant="outline" className="bg-slate-50 px-4 py-1.5 border-slate-200 text-slate-500 font-bold text-[10px] uppercase tracking-widest">
+                TRANSACTION: {processed.hasData ? reportData.metadata?.idtag : "N/A"}
+              </Badge>
+              <Badge className={`px-4 py-1.5 font-bold text-[10px] uppercase tracking-widest ${processed.hasData ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>
+                {processed.hasData ? '● Verified Data' : '○ No Records'}
+              </Badge>
+            </div>
           </div>
-          <div className="text-right">
-             <p className="text-[10px] font-black text-slate-300 uppercase leading-none">Status</p>
-             <p className={`text-xs font-bold tracking-tight ${processed.hasData ? 'text-emerald-500' : 'text-slate-400'}`}>
-                {processed.hasData ? '● DATA VERIFIED' : '○ NO RECORDS'}
-             </p>
+          <div className="bg-[#0F172A] p-8 px-12 rounded-[2rem] text-white shadow-xl min-w-[300px] text-center md:text-right">
+             <p className="text-[10px] uppercase font-black text-slate-500 tracking-[0.2em] mb-1">Session Revenue</p>
+             <p className="text-5xl font-black tracking-tighter">{processed.kpi.revenue}</p>
           </div>
         </div>
 
-        {/* KPI Row */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <StatCard title="Active Sessions" value={processed.kpi.sessions} />
-          <StatCard title="Total Energy" value={processed.kpi.energy} />
-          <StatCard title="Gross Revenue" value={processed.kpi.revenue} color="text-blue-600" />
-          <StatCard title="Net Profit" value={processed.kpi.netIncome} color="text-emerald-600" />
-          <StatCard title="CO2 Offset" value={processed.kpi.co2Saved} color="text-teal-600" />
+        {/* KPI Grid - Matching the Stat Box look from Screenshot 2 */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
+          <StatCard title="Active Sessions" value={processed.kpi.sessions} icon={<Activity size={18}/>} iconBg="bg-blue-500" />
+          <StatCard title="Power Used" value={processed.kpi.energy} icon={<Zap size={18}/>} iconBg="bg-amber-500" />
+          <StatCard title="Gross Rev" value={processed.kpi.revenue} icon={<Wallet size={18}/>} iconBg="bg-indigo-500" />
+          <StatCard title="Net Profit" value={processed.kpi.netIncome} icon={<TrendingUp size={18}/>} iconBg="bg-emerald-500" />
+          <StatCard title="CO2 Saved" value={processed.kpi.co2Saved} icon={<Leaf size={18}/>} iconBg="bg-teal-500" />
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 gap-12 mt-12">
-          <ChartBox title="Revenue Accrual" hasData={processed.hasData}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
+          <ChartBox title="Revenue Accrual" hasData={processed.hasData} icon={<BarChart3 size={20}/>} iconBg="bg-blue-600">
             <AreaChart data={processed.chart}>
               <defs>
                 <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2563eb" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2}/>
                   <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="time" tick={{fontSize: 10, fontWeight: 'bold', fill: '#cbd5e1'}} axisLine={false} tickLine={false} />
-              <YAxis tick={{fontSize: 10, fontWeight: 'bold', fill: '#cbd5e1'}} axisLine={false} tickLine={false} />
-              <Tooltip cursor={{stroke: '#2563eb', strokeWidth: 1}} contentStyle={{borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
-              <Area type="monotone" dataKey="revenue" stroke="#2563eb" fillOpacity={1} fill="url(#colorRev)" strokeWidth={3} />
+              <XAxis dataKey="time" tick={{fontSize: 11, fontWeight: 700, fill: '#94a3b8'}} axisLine={false} tickLine={false} />
+              <YAxis tick={{fontSize: 11, fontWeight: 700, fill: '#94a3b8'}} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
+              <Area type="monotone" dataKey="revenue" stroke="#2563eb" fillOpacity={1} fill="url(#colorRev)" strokeWidth={4} />
             </AreaChart>
           </ChartBox>
 
-          <ChartBox title="Profit Accumulation" hasData={processed.hasData}>
+          <ChartBox title="Profit Accumulation" hasData={processed.hasData} icon={<TrendingUp size={20}/>} iconBg="bg-emerald-600">
             <LineChart data={processed.chart}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="time" tick={{fontSize: 10, fontWeight: 'bold', fill: '#cbd5e1'}} axisLine={false} tickLine={false} />
-              <YAxis tick={{fontSize: 10, fontWeight: 'bold', fill: '#cbd5e1'}} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}/>
-              <Line type="stepAfter" dataKey="netIncome" stroke="#10b981" strokeWidth={4} dot={false} />
+              <XAxis dataKey="time" tick={{fontSize: 11, fontWeight: 700, fill: '#94a3b8'}} axisLine={false} tickLine={false} />
+              <YAxis tick={{fontSize: 11, fontWeight: 700, fill: '#94a3b8'}} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}/>
+              <Line type="monotone" dataKey="netIncome" stroke="#10b981" strokeWidth={4} dot={false} />
             </LineChart>
           </ChartBox>
         </div>
@@ -377,29 +184,40 @@ export default function ReportsPage() {
   );
 }
 
-function StatCard({ title, value, color = "text-slate-900" }) {
+function StatCard({ title, value, icon, iconBg }) {
   return (
-    <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
-      <p className="text-[9px] uppercase text-slate-400 font-black tracking-[0.2em] mb-3">{title}</p>
-      <p className={`text-2xl font-black tracking-tighter ${color}`}>{value}</p>
-    </div>
+    <Card className="bg-white p-6 rounded-[2rem] border-none shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-40">
+      <div className={`${iconBg} w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg shadow-slate-200`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-[10px] uppercase text-slate-400 font-black tracking-[0.15em] mb-1">{title}</p>
+        <p className="text-2xl font-black tracking-tighter text-slate-900">{value}</p>
+      </div>
+    </Card>
   );
 }
 
-function ChartBox({ title, children, hasData }) {
+function ChartBox({ title, children, hasData, icon, iconBg }) {
   return (
-    <div className="space-y-6 relative">
-      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-2">{title}</h3>
-      <div className="h-80 w-full bg-slate-50/30 rounded-[2.5rem] p-8 border border-slate-100 flex items-center justify-center">
+    <Card className="bg-white rounded-[2.5rem] p-8 border-none shadow-sm flex flex-col h-[480px]">
+      <div className="flex items-center mb-10">
+        <div className={`${iconBg} p-2.5 rounded-xl text-white mr-4 shadow-md`}>
+          {icon}
+        </div>
+        <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest italic">{title}</h3>
+      </div>
+      
+      <div className="flex-1 w-full flex items-center justify-center">
         {!hasData ? (
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-12 h-1 bg-slate-200 rounded-full animate-pulse" />
-            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">No Telemetry Recorded</p>
+          <div className="text-center space-y-3">
+             <div className="w-16 h-1 bg-slate-100 mx-auto rounded-full animate-pulse" />
+             <p className="text-xs font-bold text-slate-300 uppercase tracking-widest">No Active Sessions Found</p>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">{children}</ResponsiveContainer>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
