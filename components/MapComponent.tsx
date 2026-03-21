@@ -81,42 +81,62 @@ const MapComponent: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-full">
-      {/* Header Info */}
-      <div className="p-4 border-b flex items-center justify-between bg-white">
-        <div className="flex items-center gap-3">
-          <div className="bg-blue-600 p-2 rounded-lg text-white">
-            <MapPin size={18} />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">{sapnaCharger.name}</h3>
-            <p className="text-[10px] text-slate-500 font-medium">{sapnaCharger.location}</p>
-          </div>
-        </div>
-        <button 
-          onClick={openInGoogleMaps}
-          className="p-2 hover:bg-slate-50 rounded-full text-blue-600 transition-colors"
-        >
-          <Navigation size={20} />
-        </button>
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col h-full">
+  {/* Header Info - Address Replaces MapPin */}
+  <div className="p-5 flex items-center justify-between bg-white">
+    <div className="flex flex-col">
+      {/* Primary Terminal Name */}
+      <div className="flex items-center gap-2 mb-0.5">
+        <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">
+          {sapnaCharger.name}
+        </h3>
+        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
       </div>
-
-      {/* Map Content */}
-      <div className="flex-grow relative min-h-[300px]">
-        {renderMap()}
-      </div>
-
-      {/* Action Footer */}
-      <div className="p-3 bg-slate-50 flex items-center justify-between">
-         <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">Coord:</span>
-            <code className="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-700">28.559, 77.244</code>
-         </div>
-         <button className="text-[10px] font-bold text-blue-600 uppercase flex items-center gap-1">
-            Fullscreen <ExternalLink size={10} />
-         </button>
+      
+      {/* Full Address Text replacing the MapPin icon */}
+      <div className="flex items-center gap-1.5">
+        <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+          {sapnaCharger.location}
+        </p>
+        <span className="text-slate-300">•</span>
+        <span className="text-[10px] text-blue-600 font-black uppercase tracking-widest">
+          Terminal ID: ZIP-SAPNA-01
+        </span>
       </div>
     </div>
+
+    {/* Navigation Action */}
+    <button 
+      onClick={openInGoogleMaps}
+      className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-blue-50 border border-slate-100 rounded-xl text-blue-600 transition-all group"
+    >
+      <span className="text-[10px] font-black uppercase tracking-widest group-hover:mr-1 transition-all">Directions</span>
+      <Navigation size={14} className="fill-blue-600/10" />
+    </button>
+  </div>
+
+  {/* Map Content */}
+  <div className="flex-grow relative min-h-[350px]">
+    {renderMap()}
+  </div>
+
+  {/* Action Footer */}
+  <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+     <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Lat:</span>
+           <code className="text-[10px] font-bold bg-white border border-slate-200 px-2 py-0.5 rounded-md text-slate-700">28.5592</code>
+        </div>
+        <div className="flex items-center gap-2">
+           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Lng:</span>
+           <code className="text-[10px] font-bold bg-white border border-slate-200 px-2 py-0.5 rounded-md text-slate-700">77.2441</code>
+        </div>
+     </div>
+     <button className="text-[10px] font-black text-slate-400 hover:text-blue-600 uppercase flex items-center gap-2 tracking-widest transition-colors">
+        Expand View <ExternalLink size={12} />
+     </button>
+  </div>
+</div>
   );
 };
 

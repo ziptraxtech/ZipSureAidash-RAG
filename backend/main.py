@@ -28,10 +28,11 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # For debugging, allow all. Tighten this later.
-    allow_credentials=True,
+    allow_origins=["*"], # In production, replace with your Vercel URL
     allow_methods=["*"],
     allow_headers=["*"],
+    # This allows the browser to 'see' the content needed for the PDF
+    expose_headers=["Content-Disposition"] 
 )
 # Session chat histories
 chat_histories = {}
