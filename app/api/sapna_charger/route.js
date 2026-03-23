@@ -1,4 +1,3 @@
-
 // /app/api/sapna_charger/route.js
 import { NextResponse } from 'next/server';
 import fs from 'fs';
