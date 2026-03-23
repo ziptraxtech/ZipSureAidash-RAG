@@ -1,3 +1,5 @@
+https://zipsureai-rag.vercel.app/
+
 # 🚀 Getting Started
 
 This guide will help you set up and run the project locally.
