@@ -13,9 +13,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 
 load_dotenv()
 
-# --- INITIALIZE RAG CHAIN GLOBALLY ---
 try:
-    # This creates the actual object your 'ask' route is looking for
     rag_chain = build_rag_chain()
     print("LOG: Successfully initialized rag_chain")
 except Exception as e:
@@ -28,13 +26,12 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, replace with your Vercel URL
+    allow_origins=["*"], 
     allow_methods=["*"],
     allow_headers=["*"],
-    # This allows the browser to 'see' the content needed for the PDF
     expose_headers=["Content-Disposition"] 
 )
-# Session chat histories
+
 chat_histories = {}
 
 @app.get("/chatbot")

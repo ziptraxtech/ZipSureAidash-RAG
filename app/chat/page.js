@@ -121,7 +121,6 @@ export default function Chat() {
                   <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] ${
                     m.role === "user" ? "bg-blue-600 text-white shadow-md" : "bg-white border border-slate-200 text-slate-800 shadow-sm"
                   }`}>
-                    {/* MARKDOWN RENDERING */}
                     <div className="prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed">
                       <Markdown>{m.content}</Markdown>
                     </div>
@@ -149,7 +148,6 @@ export default function Chat() {
         </div>
       </div>
 
-      {/* INPUT AREA */}
       <div className="w-full bg-white border-t p-4">
         <form className="max-w-4xl mx-auto flex gap-3" onSubmit={onHandleSubmit}>
           <Input

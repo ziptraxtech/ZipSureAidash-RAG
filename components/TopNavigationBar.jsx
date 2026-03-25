@@ -1,190 +1,14 @@
-// "use client";
-
-// import React, { useState } from "react";
-// import Link from "next/link";
-// import { usePathname } from "next/navigation";
-// import { 
-//   Zap, 
-//   Bell, 
-//   FileDown, 
-//   Calendar as CalendarIcon, 
-// } from "lucide-react";
-// import { IoChatbubblesOutline } from "react-icons/io5"; // Icon from your Sidebar
-// import { format } from "date-fns";
-// import { 
-//   SignInButton, 
-//   SignedIn, 
-//   SignedOut, 
-//   UserButton 
-// } from "@clerk/nextjs";
-
-// // Shadcn UI Components
-// import { Button } from "@/components/ui/button";
-// import { Calendar } from "@/components/ui/calendar";
-// import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-// const TopNavigationBar = ({ 
-//   onDateChange, 
-//   onRangeChange, 
-//   showControls = true, 
-//   exportId = "analytics-report-area" 
-// }) => {
-//   const pathname = usePathname();
-//   const [date, setDate] = useState(new Date("2026-03-13"));
-//   const [range, setRange] = useState("day");
-//   const [isExporting, setIsExporting] = useState(false);
-
-//   const navLinks = [
-//     { href: "/dashboard", label: "Dashboard" },
-//     { href: `{"/analytics?device=${rawId}"}`, label: "Analytics" },
-//     { href: "/reports", label: "Reports" },
-//     { href: "/payment-plans", label: "Payments" },
-//   ];
-
-//   const handleExportPDF = async () => {
-//     try {
-//       setIsExporting(true);
-//       const { generatePDF } = await import("@/lib/pdf-generator");
-//       const reportArea = document.getElementById(exportId);
-//       const reportRef = { current: reportArea };
-//       await generatePDF(reportRef, setIsExporting, range);
-//     } catch (error) {
-//       console.error("PDF Export failed:", error);
-//     } finally {
-//       setIsExporting(false);
-//     }
-//   };
-
-//   return (
-//     <header className="zipsure-gradient shadow-xl border-b border-white/10 w-full no-print sticky top-0 left-0 z-50">
-//       <div className="w-full px-8 py-4">
-//         <div className="flex items-center justify-between">
-          
-//           {/* 1. LOGO AND BRAND */}
-//           <div className="flex items-center space-x-4 shrink-0">
-//             <div className="bg-white/15 backdrop-blur-md rounded-xl p-2.5 border border-white/20">
-//               <Zap className="text-white fill-white" size={24} />
-//             </div>
-//             <div>
-//               <h1 className="text-2xl font-bold text-white tracking-tight">
-//                 ZipSureAI
-//               </h1>
-//               <p className="text-blue-100 font-medium text-sm">
-//                 Battery Intelligence
-//               </p>
-//             </div>
-//           </div>
-          
-//           {/* 2. CENTER NAVIGATION */}
-//           <nav className="hidden lg:flex items-center space-x-10">
-//             {navLinks.map(({ href, label }) => {
-//               const isActive = pathname === href;
-//               return (
-//                 <Link key={href} href={href} className="no-underline">
-//                   <span className={`text-[14px] font-black uppercase tracking-widest transition-all duration-200 cursor-pointer ${
-//                     isActive ? "text-white border-b-2 border-white pb-1" : "text-white/60 hover:text-white"
-//                   }`}>
-//                     {label}
-//                   </span>
-//                 </Link>
-//               );
-//             })}
-//           </nav>
-
-//           {/* 3. ACTION CONTROLS & AUTH/CHAT */}
-//           <div className="flex items-center space-x-3">
-//             {showControls && (
-//               <div className="hidden xl:flex items-center space-x-3 border-r border-white/10 pr-4 mr-1">
-//                 <Select value={range} onValueChange={(v) => { setRange(v); onRangeChange?.(v); }}>
-//                   <SelectTrigger className="h-13 w-[130px] bg-white/10 border-white/20 text-white text-[13px] font-black uppercase rounded-lg">
-//                     <SelectValue placeholder="Range" />
-//                   </SelectTrigger>
-//                   <SelectContent>
-//                     <SelectItem value="day">Daily View</SelectItem>
-//                     <SelectItem value="week">Weekly Trend</SelectItem>
-//                     <SelectItem value="month">Monthly Audit</SelectItem>
-//                   </SelectContent>
-//                 </Select>
-
-//                 <Popover>
-//                   <PopoverTrigger asChild>
-//                     <Button variant="ghost" className="h-13 px-3 text-white/80 hover:text-white hover:bg-white/10 rounded-lg flex gap-2 font-black text-[16px] uppercase">
-//                       <CalendarIcon size={14} className="text-blue-200" />
-//                       <span>{format(date, "MMM dd, yyyy")}</span>
-//                     </Button>
-//                   </PopoverTrigger>
-//                   <PopoverContent className="w-auto p-0 rounded-xl shadow-2xl border-none" align="end">
-//                     <Calendar mode="single" selected={date} onSelect={(d) => { if (d) { setDate(d); onDateChange?.(d); } }} />
-//                   </PopoverContent>
-//                 </Popover>
-
-//                 <Button onClick={handleExportPDF} disabled={isExporting} className="h-9 bg-white text-blue-700 hover:bg-blue-50 rounded-lg flex items-center gap-2 px-4 shadow-lg">
-//                   {isExporting ? <div className="h-3 w-3 border-2 border-t-blue-700 rounded-full animate-spin" /> : <FileDown size={14} />}
-//                   <span className="uppercase text-[13px] tracking-widest font-black">Export PDF</span>
-//                 </Button>
-//               </div>
-//             )}
-
-//             {/* CHAT, NOTIFICATIONS & CLERK AUTH */}
-//             <div className="flex items-center space-x-1">
-//               {/* Notification Bell */}
-//               <button className="p-2.5 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all relative">
-//                 <Bell size={24} />
-//                 <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-rose-500 rounded-full border border-blue-900" />
-//               </button>
-
-//               {/* NEW: AI Chat Button (Positioned to the right of Bell) */}
-//               <Link href="/chat">
-//                 <button className="p-2.5 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all relative group">
-//                   <IoChatbubblesOutline size={24} />
-//                   {/* Tooltip */}
-//                   <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-[8px] text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity font-black uppercase tracking-widest whitespace-nowrap">
-//                     AI Chat
-//                   </span>
-//                 </button>
-//               </Link>
-
-//               {/* Clerk User Button */}
-//               <div className="pl-3 ml-2 border-l border-white/10">
-//                 <SignedOut>
-//                   <SignInButton mode="modal">
-//                     <button className="text-[13px] font-black uppercase tracking-widest text-white border border-white/20 px-4 py-2 rounded-xl hover:bg-white hover:text-blue-700 transition-all">
-//                       Sign In
-//                     </button>
-//                   </SignInButton>
-//                 </SignedOut>
-//                 <SignedIn>
-//                   <UserButton 
-//                     appearance={{
-//                       elements: {
-//                         userButtonAvatarBox: "w-9 h-9 border-2 border-white/20 hover:border-white transition-all shadow-xl"
-//                       }
-//                     }}
-//                   />
-//                 </SignedIn>
-//               </div>
-//             </div>
-//           </div>
-
-//         </div>
-//       </div>
-//     </header>
-//   );
-// };
-
-// export default TopNavigationBar;
-
 "use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation"; // 1. Added useSearchParams
+import { usePathname, useSearchParams } from "next/navigation";
 import { 
   Zap, 
   Bell, 
   FileDown, 
   Calendar as CalendarIcon, 
+  Menu 
 } from "lucide-react";
 import { IoChatbubblesOutline } from "react-icons/io5";
 import { format } from "date-fns";
@@ -200,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 
 const TopNavigationBar = ({ 
   onDateChange, 
@@ -208,16 +33,14 @@ const TopNavigationBar = ({
   exportId = "analytics-report-area" 
 }) => {
   const pathname = usePathname();
-  const searchParams = useSearchParams(); // 2. Initialize Hook
+  const searchParams = useSearchParams();
+  const [isOpen, setIsOpen] = useState(false);
   
-  // 3. Define rawId correctly
   const rawId = searchParams.get("device") || "9";
-
-  const [date, setDate] = useState(new Date("2026-03-13"));
+  const [date, setDate] = useState(new Date());
   const [range, setRange] = useState("day");
   const [isExporting, setIsExporting] = useState(false);
 
-  // 4. Fixed navLinks logic to persist the device ID across all pages
   const navLinks = [
     { href: `/dashboard?device=${rawId}`, label: "Dashboard" },
     { href: `/analytics?device=${rawId}`, label: "Analytics" },
@@ -230,8 +53,27 @@ const TopNavigationBar = ({
       setIsExporting(true);
       const { generatePDF } = await import("@/lib/pdf-generator");
       const reportArea = document.getElementById(exportId);
-      const reportRef = { current: reportArea };
-      await generatePDF(reportRef, setIsExporting, range);
+      
+      if (reportArea) {
+        // --- FORCE DESKTOP VIEW FOR PDF GENERATION ---
+        const originalStyle = reportArea.style.cssText;
+        
+        // Force width to 1280px so media queries like 'lg:' trigger correctly in the PDF
+        reportArea.style.width = "1280px";
+        reportArea.style.minWidth = "1280px";
+        reportArea.classList.add("force-desktop-export");
+
+        const reportRef = { current: reportArea };
+        
+        // Give the browser a micro-task to reflow the layout before capturing
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        
+        await generatePDF(reportRef, setIsExporting, range);
+
+        // REVERT STYLES
+        reportArea.style.cssText = originalStyle;
+        reportArea.classList.remove("force-desktop-export");
+      }
     } catch (error) {
       console.error("PDF Export failed:", error);
     } finally {
@@ -241,11 +83,46 @@ const TopNavigationBar = ({
 
   return (
     <header className="zipsure-gradient shadow-xl border-b border-white/10 w-full no-print sticky top-0 left-0 z-50">
-      <div className="w-full px-8 py-4">
-        <div className="flex items-center justify-between">
+      <div className="w-full px-4 md:px-8 py-4">
+        <div className="flex items-center justify-between gap-2">
           
-          {/* 1. LOGO AND BRAND */}
-          <div className="flex items-center space-x-4 shrink-0">
+          {/* 1. LEFT: LOGO & MOBILE MENU */}
+          <div className="flex items-center space-x-2 md:space-x-4 shrink-0">
+            <div className="lg:hidden">
+              <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" className="p-2 text-white hover:bg-white/10">
+                    <Menu size={24} />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px] bg-[#0f172a] border-white/10 p-6 text-white">
+                  <SheetTitle className="text-white flex items-center gap-3 mb-8">
+                      {/* The Icon Container */}
+                      <div className="bg-white/10 p-2 rounded-lg border border-white/10">
+                        <Zap className="text-blue-400 fill-blue-400" size={22} />
+                      </div>
+
+                      {/* The Text Container */}
+                      <div className="flex flex-col items-start">
+                        <span className="text-xl font-bold tracking-tight leading-none">
+                          ZipSureAI
+                        </span>
+                        <span className="text-blue-300 font-medium text-[11px] uppercase tracking-wider mt-1">
+                          Battery Intelligence
+                        </span>
+                      </div>
+                    </SheetTitle>
+                  <nav className="flex flex-col space-y-6">
+                    {navLinks.map(({ href, label }) => (
+                      <Link key={href} href={href} onClick={() => setIsOpen(false)} className="text-lg font-bold uppercase tracking-widest text-white/70 hover:text-white">
+                        {label}
+                      </Link>
+                    ))}
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            </div>
+            <div className="flex items-center space-x-4 shrink-0">
             <div className="bg-white/15 backdrop-blur-md rounded-xl p-2.5 border border-white/20">
               <Zap className="text-white fill-white" size={24} />
             </div>
@@ -258,15 +135,15 @@ const TopNavigationBar = ({
               </p>
             </div>
           </div>
+          </div>
           
-          {/* 2. CENTER NAVIGATION */}
-          <nav className="hidden lg:flex items-center space-x-10">
+          {/* 2. CENTER: DESKTOP NAV */}
+          <nav className="hidden lg:flex items-center space-x-8">
             {navLinks.map(({ href, label }) => {
-              // Check if the current pathname matches the link (ignoring query params)
               const isActive = pathname === href.split('?')[0];
               return (
                 <Link key={href} href={href} className="no-underline">
-                  <span className={`text-[14px] font-black uppercase tracking-widest transition-all duration-200 cursor-pointer ${
+                  <span className={`text-[13px] font-black uppercase tracking-widest transition-all ${
                     isActive ? "text-white border-b-2 border-white pb-1" : "text-white/60 hover:text-white"
                   }`}>
                     {label}
@@ -276,74 +153,51 @@ const TopNavigationBar = ({
             })}
           </nav>
 
-          {/* 3. ACTION CONTROLS & AUTH/CHAT */}
-          <div className="flex items-center space-x-3">
+          {/* 3. RIGHT: ACTION CONTROLS */}
+          <div className="flex items-center space-x-1 md:space-x-3">
             {showControls && (
-              <div className="hidden xl:flex items-center space-x-3 border-r border-white/10 pr-4 mr-1">
-                <Select value={range} onValueChange={(v) => { setRange(v); onRangeChange?.(v); }}>
-                  <SelectTrigger className="h-13 w-[130px] bg-white/10 border-white/20 text-white text-[13px] font-black uppercase rounded-lg">
-                    <SelectValue placeholder="Range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="day">Daily View</SelectItem>
-                    <SelectItem value="week">Weekly Trend</SelectItem>
-                    <SelectItem value="month">Monthly Audit</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center space-x-1 md:space-x-2">
+                {/* Range Selector (Hidden on smallest mobile) */}
+                <div className="hidden sm:block">
+                  <Select value={range} onValueChange={(v) => { setRange(v); onRangeChange?.(v); }}>
+                    <SelectTrigger className="h-9 w-[110px] bg-white/10 border-white/20 text-white text-[11px] font-black uppercase">
+                      <SelectValue placeholder="Range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="day">Daily</SelectItem>
+                      <SelectItem value="week">Weekly</SelectItem>
+                      <SelectItem value="month">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
+                {/* Calendar - NOW VISIBLE ON MOBILE */}
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="ghost" className="h-13 px-3 text-white/80 hover:text-white hover:bg-white/10 rounded-lg flex gap-2 font-black text-[16px] uppercase">
-                      <CalendarIcon size={14} className="text-blue-200" />
-                      <span>{format(date, "MMM dd, yyyy")}</span>
+                    <Button variant="ghost" className="h-9 px-2 md:px-3 text-white/80 hover:bg-white/10 flex gap-2 font-black uppercase text-[12px]">
+                      <CalendarIcon size={18} className="text-blue-200" />
+                      <span className="hidden md:inline">{format(date, "MMM dd, yyyy")}</span>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 rounded-xl shadow-2xl border-none" align="end">
+                  <PopoverContent className="w-auto p-0" align="end">
                     <Calendar mode="single" selected={date} onSelect={(d) => { if (d) { setDate(d); onDateChange?.(d); } }} />
                   </PopoverContent>
                 </Popover>
 
-                <Button onClick={handleExportPDF} disabled={isExporting} className="h-9 bg-white text-blue-700 hover:bg-blue-50 rounded-lg flex items-center gap-2 px-4 shadow-lg">
-                  {isExporting ? <div className="h-3 w-3 border-2 border-t-blue-700 rounded-full animate-spin" /> : <FileDown size={14} />}
-                  <span className="uppercase text-[13px] tracking-widest font-black">Export PDF</span>
+                {/* Export Button */}
+                <Button onClick={handleExportPDF} disabled={isExporting} className="h-9 bg-white text-blue-700 hover:bg-blue-50 px-3 md:px-4 rounded-lg flex items-center shadow-lg transition-transform active:scale-95">
+                  {isExporting ? <div className="h-3 w-3 border-2 border-t-blue-700 rounded-full animate-spin" /> : <FileDown size={16} />}
+                  <span className="hidden sm:inline uppercase text-[11px] font-black ml-2">Export PDF</span>
                 </Button>
               </div>
             )}
 
-            {/* CHAT, NOTIFICATIONS & CLERK AUTH */}
-            <div className="flex items-center space-x-1">
-              <button className="p-2.5 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all relative">
-                <Bell size={24} />
-                <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-rose-500 rounded-full border border-blue-900" />
-              </button>
-
+            {/* Auth & Chat */}
+            <div className="flex items-center space-x-1 border-l border-white/10 pl-2">
               <Link href={`/chat?device=${rawId}`}>
-                <button className="p-2.5 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all relative group">
-                  <IoChatbubblesOutline size={24} />
-                  <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-[8px] text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity font-black uppercase tracking-widest whitespace-nowrap">
-                    AI Chat
-                  </span>
-                </button>
+                <button className="p-2 text-white/70 hover:text-white"><IoChatbubblesOutline size={22} /></button>
               </Link>
-
-              <div className="pl-3 ml-2 border-l border-white/10">
-                <SignedOut>
-                  <SignInButton mode="modal">
-                    <button className="text-[13px] font-black uppercase tracking-widest text-white border border-white/20 px-4 py-2 rounded-xl hover:bg-white hover:text-blue-700 transition-all">
-                      Sign In
-                    </button>
-                  </SignInButton>
-                </SignedOut>
-                <SignedIn>
-                  <UserButton 
-                    appearance={{
-                      elements: {
-                        userButtonAvatarBox: "w-9 h-9 border-2 border-white/20 hover:border-white transition-all shadow-xl"
-                      }
-                    }}
-                  />
-                </SignedIn>
-              </div>
+              <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8 md:w-9 md:h-9" } }} />
             </div>
           </div>
 

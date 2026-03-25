@@ -12,7 +12,6 @@ export default function RootLayout({ children }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Corrected: Set to true so the hidden PDF container can render after hydration
     setMounted(true);
   }, []);
 
@@ -20,14 +19,11 @@ export default function RootLayout({ children }) {
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="bg-[#F8FAFC]" suppressHydrationWarning>
-          {/* Removed 'flex' and 'ml-20'. 
-              The page now takes up 100% width since the sidebar is gone.
-          */}
+          
           <main className="min-h-screen w-full">
             {children}
           </main>
 
-          {/* Hidden container for PDF Generation */}
           {mounted && (
             <div 
               style={{ 

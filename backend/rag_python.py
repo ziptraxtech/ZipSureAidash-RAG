@@ -4,18 +4,14 @@ from dotenv import load_dotenv
 
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
 from langchain_google_genai import (
     ChatGoogleGenerativeAI,
     GoogleGenerativeAIEmbeddings,
 )
-
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
-
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 
@@ -37,11 +33,8 @@ def load_json_documents():
     try:
         with open(path, 'r') as f:
             data = json.load(f)
-            
-            # If the JSON is a list (e.g., [ {"id": 1, "data": "..."}, {...} ])
             if isinstance(data, list):
                 for item in data:
-                    # Convert the entire dictionary/item to a string for embedding
                     content = json.dumps(item) 
                     documents.append(
                         Document(
@@ -49,7 +42,7 @@ def load_json_documents():
                             metadata={"source": "analytics_json"}
                         )
                     )
-            # If the JSON is a single dictionary
+
             elif isinstance(data, dict):
                 for key, value in data.items():
                     content = f"{key}: {value}"
@@ -83,21 +76,16 @@ def build_rag_chain():
     )
     splits = splitter.split_documents(docs)
 
-    # Gemini Embeddings
     embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001",google_api_key=GEMINI_API_KEY,task_type="retrieval_document")
 
-    # Initialize Pinecone for storage of embeddings
     pc = Pinecone(api_key=PINECONE_API_KEY)
 
     index_name = "zipcharger-analytics1"
     
-    # Check if index exists, but DON'T upload documents here
     if index_name not in pc.list_indexes().names():
-        # If it doesn't exist, you should index locally once, not on Vercel
         print(f"ERROR: Index {index_name} does not exist. Please index your data locally first.")
         return None
 
-    # Connect to the EXISTING vectorstore instead of creating from_documents
     vectorstore = PineconeVectorStore(
         index_name=index_name,
         embedding=embeddings,
@@ -106,7 +94,6 @@ def build_rag_chain():
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
-    # Gemini LLM
     llm = ChatGoogleGenerativeAI(
     model="gemini-3-flash-preview", 
     google_api_key=GEMINI_API_KEY,
