@@ -35,40 +35,52 @@ function DashboardContent() {
   const rawId = searchParams.get("device") || "9";
 
   const deviceId = useMemo(() => {
-    if (rawId === "9") return "sapna_charger";
-    const num = parseInt(rawId);
-    if (num >= 2 && num <= 8) return `device${num}`;
-    return rawId;
-  }, [rawId]);
+  if (rawId === "1") return "device1"; // Match your custom route logic
+  if (rawId === "9") return "sapna_charger";
+  const num = parseInt(rawId);
+  if (num >= 2 && num <= 8) return `device${num}`;
+  return rawId;
+}, [rawId]);
   
   const [rawData, setRawData] = useState({ points: [], metadata: {} });
   const [hasMounted, setHasMounted] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date("2026-03-13"));
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewRange, setViewRange] = useState("day");
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setHasMounted(true);
-        const apiUrl = deviceId === "sapna_charger" 
-          ? "/api/sapna_charger" 
-          : `/api/charger_data?device=${deviceId}`;
-
-        const response = await fetch(apiUrl);
-        const result = await response.json();
-
-        if (response.ok && result.points) {
-          setRawData(result);
-          const validPoints = result.points.filter(p => !p.datetime.startsWith("1970"));
-          const targetPoint = validPoints.length > 0 ? validPoints[validPoints.length - 1] : result.points[0];
-          if (targetPoint) setSelectedDate(new Date(targetPoint.datetime));
-        }
-      } catch (error) {
-        console.error("Fetch error:", error);
+  const fetchData = async () => {
+    try {
+      setHasMounted(true);
+      
+      // LOGIC: Select the correct API route based on deviceId
+      let apiUrl;
+      if (deviceId === "device1") {
+        apiUrl = "/api/charger_data_1"; // Your custom route for ID 1
+      } else if (deviceId === "sapna_charger") {
+        apiUrl = "/api/sapna_charger";
+      } else {
+        apiUrl = `/api/charger_data?device=${deviceId}`;
       }
-    };
-    fetchData();
-  }, [deviceId]);
+
+      const response = await fetch(apiUrl);
+      const result = await response.json();
+
+      if (response.ok && result.points) {
+        setRawData(result);
+        
+        const validPoints = result.points.filter(p => !p.datetime.startsWith("1970"));
+        const targetPoint = validPoints.length > 0 
+          ? validPoints[validPoints.length - 1] 
+          : result.points[result.points.length - 1];
+          
+        if (targetPoint) setSelectedDate(new Date(targetPoint.datetime));
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
+  };
+  fetchData();
+}, [deviceId]);
 
   const metrics = useMemo(() => {
     const allPoints = rawData.points || [];

@@ -34,6 +34,7 @@ function DashboardContent() {
   const rawId = searchParams.get("device") || "9";
 
   const deviceId = useMemo(() => {
+    if (rawId === "1") return "device1"; // Match your custom route logic
     if (rawId === "9") return "sapna_charger";
     const num = parseInt(rawId);
     if (num >= 2 && num <= 8) return `device${num}`;
@@ -49,9 +50,15 @@ function DashboardContent() {
     const fetchData = async () => {
       try {
         setHasMounted(true);
-        const apiUrl = deviceId === "sapna_charger" 
-          ? "/api/sapna_charger" 
-          : `/api/charger_data?device=${deviceId}`;
+
+        let apiUrl;
+        if (deviceId === "device1") {
+          apiUrl = "/api/charger_data_1"; // Your custom route for ID 1
+        } else if (deviceId === "sapna_charger") {
+          apiUrl = "/api/sapna_charger";
+        } else {
+          apiUrl = `/api/charger_data?device=${deviceId}`;
+        }
 
         const response = await fetch(apiUrl);
         const result = await response.json();
