@@ -18,13 +18,14 @@ interface MapProps {
 
 const MapComponent: React.FC<MapProps> = ({ deviceId }) => {
   const devices: Device[] = [
-    { id: 2, name: 'Andheria More Charging Hub', location: 'CDR Chowk, Near Chattarpur Metro', status: 'critical', coordinates: { lat: 28.5063, lng: 77.1756 } },
-    { id: 3, name: 'Hauz Khas District Center', location: 'Hauz Khas Metro Station', status: 'excellent', coordinates: { lat: 28.5494, lng: 77.2066 } },
-    { id: 4, name: 'Qutub Minar Charging Station', location: 'Qutub Minar', status: 'good', coordinates: { lat: 28.5244, lng: 77.1855 } },
-    { id: 5, name: 'TB Hospital Charging Point', location: 'TB Hospital near Qutub Minar', status: 'critical', coordinates: { lat: 28.5180, lng: 77.1920 } },
-    { id: 6, name: 'Hauz Khas Metro Gate 1', location: 'Hauz Khas Metro Gate 1', status: 'offline', coordinates: { lat: 28.5431, lng: 77.2068 } },
-    { id: 7, name: 'RK Puram Sector 5', location: 'RK Puram Sector 5', status: 'good', coordinates: { lat: 28.5640, lng: 77.1825 } },
-    { id: 8, name: 'IIT Delhi Campus', location: 'IIT Delhi', status: 'excellent', coordinates: { lat: 28.5458, lng: 77.1931 } },
+    { id: 1, name: 'Andheria More Charging Hub', location: 'CDR Chowk, Near Chattarpur Metro', status: 'critical', coordinates: { lat: 28.5063, lng: 77.1756 } },
+    { id: 2, name: 'Hauz Khas District Center', location: 'Hauz Khas Metro Station', status: 'excellent', coordinates: { lat: 28.5494, lng: 77.2066 } },
+    { id: 3, name: 'Qutub Minar Charging Station', location: 'Qutub Minar', status: 'good', coordinates: { lat: 28.5244, lng: 77.1855 } },
+    { id: 4, name: 'TB Hospital Charging Point', location: 'TB Hospital near Qutub Minar', status: 'critical', coordinates: { lat: 28.5180, lng: 77.1920 } },
+    { id: 5, name: 'Hauz Khas Metro Gate 1', location: 'Hauz Khas Metro Gate 1', status: 'offline', coordinates: { lat: 28.5431, lng: 77.2068 } },
+    { id: 6, name: 'RK Puram Sector 5', location: 'RK Puram Sector 5', status: 'good', coordinates: { lat: 28.5640, lng: 77.1825 } },
+    { id: 7, name: 'IIT Delhi Campus', location: 'IIT Delhi', status: 'excellent', coordinates: { lat: 28.5458, lng: 77.1931 } },
+    { id: 8, name: 'Pascheel Park', location: 'Panchsheel Park Metro', status: 'good', coordinates: { lat: 28.5355, lng: 77.2162} },
     { id: 9, name: 'Sapna Terminal - Okhla', location: 'Okhla Industrial Estate, Phase III', status: 'good', coordinates: { lat: 28.5594, lng: 77.2444 } },
   ];
 
