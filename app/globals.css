@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.zipsure-gradient {
+  background: linear-gradient(135deg, #1e40af 0%, #0891b2 100%);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

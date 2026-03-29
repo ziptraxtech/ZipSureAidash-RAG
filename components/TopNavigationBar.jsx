@@ -12,12 +12,6 @@ import {
 } from "lucide-react";
 import { IoChatbubblesOutline } from "react-icons/io5";
 import { format } from "date-fns";
-import { 
-  SignInButton, 
-  SignedIn, 
-  SignedOut, 
-  UserButton 
-} from "@clerk/nextjs";
 
 // Shadcn UI Components
 import { Button } from "@/components/ui/button";
@@ -42,10 +36,10 @@ const TopNavigationBar = ({
   const [isExporting, setIsExporting] = useState(false);
 
   const navLinks = [
-    { href: `/dashboard?device=${rawId}`, label: "Dashboard" },
-    { href: `/analytics?device=${rawId}`, label: "Analytics" },
-    { href: `/reports?device=${rawId}`, label: "Reports" },
-    { href: `/payment-plans?device=${rawId}`, label: "Payments" },
+    { href: `/report/dashboard?device=${rawId}`, label: "Dashboard" },
+    { href: `/report/analytics?device=${rawId}`, label: "Analytics" },
+    { href: `/report/reports?device=${rawId}`, label: "Reports" },
+    { href: `/report/payment-plans?device=${rawId}`, label: "Payments" },
   ];
 
   const handleExportPDF = async () => {
@@ -140,7 +134,7 @@ const TopNavigationBar = ({
           {/* 2. CENTER: DESKTOP NAV */}
           <nav className="hidden lg:flex items-center space-x-8">
             {navLinks.map(({ href, label }) => {
-              const isActive = pathname === href.split('?')[0];
+              const isActive = pathname === href.split('?')[0] || pathname.startsWith(href.split('?')[0]);
               return (
                 <Link key={href} href={href} className="no-underline">
                   <span className={`text-[13px] font-black uppercase tracking-widest transition-all ${
@@ -192,12 +186,11 @@ const TopNavigationBar = ({
               </div>
             )}
 
-            {/* Auth & Chat */}
+            {/* Chat */}
             <div className="flex items-center space-x-1 border-l border-white/10 pl-2">
-              <Link href={`/chat?device=${rawId}`}>
+              <Link href={`/report/chat?device=${rawId}`}>
                 <button className="p-2 text-white/70 hover:text-white"><IoChatbubblesOutline size={22} /></button>
               </Link>
-              <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8 md:w-9 md:h-9" } }} />
             </div>
           </div>
 

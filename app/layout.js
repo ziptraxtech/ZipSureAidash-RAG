@@ -4,7 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 
 // Keep these for your background PDF generation logic
-import DashboardContent from "@/app/dashboard/page";
+import DashboardContent from "@/app/report/dashboard/page";
 import AnalyticsContent from "@/app/analytics/page";
 import ReportsContent from "@/app/reports/page";
 

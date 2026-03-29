@@ -33,22 +33,22 @@ export async function GET(request) {
     
     const flattenedPoints = sortedPoints.map((p, index) => {
       const rawCurrent = parseFloat(p.ac_current) || 0;
-      const voltage = 230; // Constant placeholder
-      const current = (rawCurrent < 0 || rawCurrent > 100) ? 0 : rawCurrent;
-      
-      // Calculate incremental energy (Wh) assuming ~1 minute intervals
-      const energyStep = (voltage * current * (1 / 60));
+      const voltage = 360;
+      const current = rawCurrent < 0 ? 0 : rawCurrent;
+      const fullDateTime = `${p.date}T${p.time}`;
+      const dtHours = index === 0 ? 0 :
+        (new Date(fullDateTime) - new Date(`${sortedPoints[index - 1].date}T${sortedPoints[index - 1].time}`)) / 3600000;
+      const energyStep = voltage * current * dtHours;
       cumulativeEnergy += energyStep;
       
       const soc = Math.min(100, 10 + (index / sortedPoints.length) * 90);
       
-      // Construct clean datetime string for logging and frontend
-      const fullDateTime = `${p.date} ${p.time}`;
+      const fullDateTimeLog = `${p.date} ${p.time}`;
 
       // --- LOG ALL FINAL PARAMETERS PER POINT ---
       console.log(
         `[${index.toString().padStart(3, '0')}] ` +
-        `TIME: ${fullDateTime} | ` +
+        `TIME: ${fullDateTimeLog} | ` +
         `CURR: ${current.toFixed(2)}A | ` +
         `STEP: ${energyStep.toFixed(3)}Wh | ` +
         `TOTAL: ${cumulativeEnergy.toFixed(2)}Wh | ` +
@@ -58,7 +58,7 @@ export async function GET(request) {
       return {
         datetime: `${p.date}T${p.time}`, // ISO format for frontend charts
         current: current,
-        voltage_inlet: voltage,
+        voltage_inlet: 360,
         soc: Number(soc.toFixed(1)),
         energy: Number(cumulativeEnergy.toFixed(2)), 
         temperature: p.temperature || 0
