@@ -10,7 +10,7 @@ export async function GET(request) {
   try {
     const response = await fetch(
       `https://le3tvo1cgc.execute-api.us-east-1.amazonaws.com/prod/get-data?table=${deviceId}`,
-      { cache: 'no-store' }
+      { cache: 'no-store', signal: AbortSignal.timeout(15000) }
     );
 
     if (!response.ok) {
@@ -74,7 +74,11 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error("❌ API CRITICAL ERROR:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const isTimeout = error.name === 'TimeoutError' || error.code === 'ETIMEDOUT';
+    console.error(`❌ API ${isTimeout ? 'TIMEOUT' : 'CRITICAL'} ERROR for ${deviceId}:`, error.message);
+    return NextResponse.json(
+      { error: isTimeout ? `AWS request timed out for ${deviceId} — table may not exist yet` : error.message },
+      { status: isTimeout ? 504 : 500 }
+    );
   }
 }

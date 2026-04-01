@@ -14,6 +14,22 @@ interface Device {
 
 type DeviceEventLogs = Record<number, string[]>;
 
+const getApiUrl = (id: number): string => {
+  if (id === 1) return '/api/charger_data_1';
+  if (id === 9) return '/api/charger_data?device=sapna_charger';
+  return `/api/charger_data?device=device${id}`;
+};
+
+const getRelativeTime = (datetime: string): string => {
+  const diffMs = Date.now() - new Date(datetime).getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'Just now';
+  if (diffMin < 60) return `${diffMin} min ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr} hr ago`;
+  return `${Math.floor(diffHr / 24)} days ago`;
+};
+
 const DeviceCards: React.FC = () => {
   const reportBaseUrl = '/report/dashboard?device=';
   const initialDevices: Device[] = useMemo(() => [
@@ -65,7 +81,7 @@ const DeviceCards: React.FC = () => {
     {
       id: 6,
       name: 'Device 6',
-      location: 'RK Puram Sector 5',
+      location: 'Piccadily back side parking Sec-34 Chandigarh',
       health: 85,
       status: 'good',
       lastUpdate: '3 min ago',
@@ -74,7 +90,7 @@ const DeviceCards: React.FC = () => {
     {
       id: 7,
       name: 'Device 7',
-      location: 'IIT',
+      location: 'Passport office front side parking Sec-34 Chandigarh',
       health: 90,
       status: 'excellent',
       lastUpdate: '2 min ago',
@@ -83,16 +99,16 @@ const DeviceCards: React.FC = () => {
     {
       id: 8,
       name: 'Device 8',
-      location: 'Pascheel Park',
-      health: null,
-      status: 'offline',
-      lastUpdate: 'Offline',
+      location: 'Piccadily multiplex II Sec-34 Chandigarh',
+      health: 100,
+      status: 'excellent',
+      lastUpdate: '1 min ago',
       reportAvailable: true
     },
     {
       id: 9,
       name: 'Device 9',
-      location: 'Sapna Cinema Zipbolt',
+      location: 'Sapna Cinema',
       health: 91,
       status: 'excellent',
       lastUpdate: '1 min ago',
@@ -257,6 +273,36 @@ const DeviceCards: React.FC = () => {
     return () => {
       cleanupCallbacks.forEach((cleanup) => cleanup());
     };
+  }, [initialDevices]);
+
+  // Fetch real last-update timestamps for all devices
+  useEffect(() => {
+    const fetchLastUpdates = async () => {
+      const results = await Promise.allSettled(
+        initialDevices.map(async (device) => {
+          const res = await fetch(getApiUrl(device.id), {
+            signal: AbortSignal.timeout(15000)
+          });
+          if (!res.ok) throw new Error('fetch failed');
+          const data = await res.json();
+          const points: { datetime: string }[] = data.points || [];
+          const validPoints = points.filter(p => !p.datetime.startsWith('1970'));
+          if (validPoints.length === 0) return { id: device.id, lastUpdate: 'No data' };
+          const last = validPoints[validPoints.length - 1];
+          return { id: device.id, lastUpdate: getRelativeTime(last.datetime) };
+        })
+      );
+
+      setDevices(prev => prev.map(device => {
+        const match = results[initialDevices.findIndex(d => d.id === device.id)];
+        if (match?.status === 'fulfilled') {
+          return { ...device, lastUpdate: match.value.lastUpdate };
+        }
+        return { ...device, lastUpdate: 'Offline' };
+      }));
+    };
+
+    fetchLastUpdates();
   }, [initialDevices]);
 
   const getStatusColor = (status: string) => {
