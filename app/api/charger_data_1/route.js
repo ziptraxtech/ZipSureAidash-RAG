@@ -6,7 +6,7 @@ export async function GET(request) {
   try {
     const response = await fetch(
       `https://le3tvo1cgc.execute-api.us-east-1.amazonaws.com/prod/get-data?table=acCurrent_Data`,
-      { cache: 'no-store' }
+      { cache: 'no-store', signal: AbortSignal.timeout(15000) }
     );
 
     if (!response.ok) {
