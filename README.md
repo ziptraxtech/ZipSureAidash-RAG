@@ -1,4 +1,4 @@
-https://zipsureai-rag.vercel.app/
+
 
 # 🚀 Getting Started
 
