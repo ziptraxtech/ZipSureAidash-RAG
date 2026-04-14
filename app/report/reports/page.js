@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
+
+const ChatbotPopup = dynamic(() => import('@/components/ChatbotPopup'), { ssr: false });
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, AreaChart, Area
@@ -10,6 +12,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, TrendingUp, Leaf, Zap, BarChart3, Activity } from 'lucide-react';
+import Footer from "@/src/components/Footer";
 
 const TopNavigationBar = dynamic(() => import('@/components/TopNavigationBar'), { 
   ssr: false,
@@ -169,90 +172,110 @@ function ReportsContent() {
     };
   }, [reportData, selectedDate, viewRange]);
 
-  if (loading) return <div className="p-20 text-center animate-pulse font-black text-slate-300 uppercase italic">Generating Financial Report {rawId}...</div>;
+  if (loading) return (
+    <div className="flex h-screen items-center justify-center bg-gray-50">
+      <p className="text-gray-400 font-medium animate-pulse">Loading financial report for Device {rawId}...</p>
+    </div>
+  );
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen font-sans w-full pb-12">
-      <TopNavigationBar onDateChange={setSelectedDate} onRangeChange={setViewRange} exportId="report-area" />
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <TopNavigationBar onDateChange={setSelectedDate} onRangeChange={setViewRange} exportId="report-area" showChat={false} />
 
-      <div id="report-area" className="p-8 max-w-[1600px] mx-auto space-y-8">
-        <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="space-y-2 text-center md:text-left">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase ">Financial report</h1>
-            <p className="text-slate-500 text-sm font-medium">Device: ZIP-UNIT-0{rawId} Performance</p>
+      <main className="flex-grow">
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <div id="report-area" className="space-y-8">
+
+            {/* Heading + revenue summary */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Financial Report</h1>
+                <p className="text-gray-600 text-sm sm:text-base">Device ZIP-UNIT-0{rawId} performance overview</p>
+              </div>
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 sm:p-6 min-w-[220px]">
+                <p className="text-xs font-medium text-gray-500 mb-1">Total Period Revenue</p>
+                <p className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
+                  {processed.kpi.revenue}
+                </p>
+              </div>
+            </div>
+
+            {/* KPI cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6">
+              <StatCard title="Total Sessions" value={processed.kpi.sessions}  icon={<Activity size={20}/>} gradient="from-blue-500 to-blue-600"    iconBg="bg-blue-500/10"   iconColor="text-blue-600" />
+              <StatCard title="Energy Sold"    value={processed.kpi.energy}    icon={<Zap size={20}/>}     gradient="from-amber-500 to-orange-600"  iconBg="bg-amber-500/10"  iconColor="text-amber-600" />
+              <StatCard title="Gross Revenue"  value={processed.kpi.revenue}   icon={<Wallet size={20}/>}  gradient="from-indigo-500 to-indigo-600" iconBg="bg-indigo-500/10" iconColor="text-indigo-600" />
+              <StatCard title="Net Profit"     value={processed.kpi.netIncome} icon={<TrendingUp size={20}/>} gradient="from-green-500 to-green-600" iconBg="bg-green-500/10" iconColor="text-green-600" />
+              <StatCard title="CO₂ Offset"    value={processed.kpi.co2Saved}  icon={<Leaf size={20}/>}    gradient="from-teal-500 to-teal-600"    iconBg="bg-teal-500/10"   iconColor="text-teal-600" />
+            </div>
+
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ChartBox title="Revenue Accrual (INR)" hasData={processed.hasData} icon={<BarChart3 size={18}/>} iconBg="bg-blue-500/10" iconColor="text-blue-600">
+                <AreaChart data={processed.chart} margin={{ bottom: 60 }}>
+                  <defs>
+                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="time" tick={{fontSize: 10, fill: '#64748b', angle: -90, textAnchor: 'end'}} height={70} interval={viewRange === "day" ? 5 : "preserveStartEnd"} axisLine={false} tickLine={false} />
+                  <YAxis tick={{fontSize: 11, fill: '#94a3b8'}} axisLine={false} tickLine={false} />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="revenue" stroke="#2563eb" fill="url(#colorRev)" strokeWidth={3} />
+                </AreaChart>
+              </ChartBox>
+
+              <ChartBox title="Profit Accumulation (INR)" hasData={processed.hasData} icon={<TrendingUp size={18}/>} iconBg="bg-green-500/10" iconColor="text-green-600">
+                <LineChart data={processed.chart} margin={{ bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="time" tick={{fontSize: 10, fill: '#64748b', angle: -90, textAnchor: 'end'}} height={70} interval={viewRange === "day" ? 5 : "preserveStartEnd"} axisLine={false} tickLine={false} />
+                  <YAxis tick={{fontSize: 11, fill: '#94a3b8'}} axisLine={false} tickLine={false} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="netIncome" stroke="#10b981" strokeWidth={3} dot={false} />
+                </LineChart>
+              </ChartBox>
+            </div>
           </div>
-          <div className="bg-[#0F172A] p-8 px-12 rounded-[2rem] text-white shadow-xl min-w-[300px] text-center md:text-right">
-             <p className="text-[10px] uppercase font-black text-slate-500 tracking-[0.2em] mb-1">Total Period Revenue</p>
-             <p className="text-5xl font-black tracking-tighter">{processed.kpi.revenue}</p>
-          </div>
         </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
-          <StatCard title="Total Sessions" value={processed.kpi.sessions} icon={<Activity size={18}/>} iconBg="bg-blue-500" />
-          <StatCard title="Energy Sold" value={processed.kpi.energy} icon={<Zap size={18}/>} iconBg="bg-amber-500" />
-          <StatCard title="Gross Rev" value={processed.kpi.revenue} icon={<Wallet size={18}/>} iconBg="bg-indigo-500" />
-          <StatCard title="Net Profit" value={processed.kpi.netIncome} icon={<TrendingUp size={18}/>} iconBg="bg-emerald-500" />
-          <StatCard title="CO2 Offset" value={processed.kpi.co2Saved} icon={<Leaf size={18}/>} iconBg="bg-teal-500" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
-          <ChartBox title="Revenue Accrual (INR)" hasData={processed.hasData} icon={<BarChart3 size={20}/>} iconBg="bg-blue-600">
-            <AreaChart data={processed.chart} margin={{ bottom: 60 }}>
-              <defs>
-                <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="time" tick={{fontSize: 10, fontWeight: 700, fill: '#64748b', angle: -90, textAnchor: 'end'}} height={70} interval={viewRange === "day" ? 5 : "preserveStartEnd"} axisLine={false} tickLine={false} />
-              <YAxis tick={{fontSize: 11, fontWeight: 700, fill: '#94a3b8'}} axisLine={false} tickLine={false} />
-              <Tooltip />
-              <Area type="monotone" dataKey="revenue" stroke="#2563eb" fill="url(#colorRev)" strokeWidth={4} />
-            </AreaChart>
-          </ChartBox>
-
-          <ChartBox title="Profit Accumulation (INR)" hasData={processed.hasData} icon={<TrendingUp size={20}/>} iconBg="bg-emerald-600">
-            <LineChart data={processed.chart} margin={{ bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="time" tick={{fontSize: 10, fontWeight: 700, fill: '#64748b', angle: -90, textAnchor: 'end'}} height={70} interval={viewRange === "day" ? 5 : "preserveStartEnd"} axisLine={false} tickLine={false} />
-              <YAxis tick={{fontSize: 11, fontWeight: 700, fill: '#94a3b8'}} axisLine={false} tickLine={false} />
-              <Tooltip />
-              <Line type="monotone" dataKey="netIncome" stroke="#10b981" strokeWidth={4} dot={false} />
-            </LineChart>
-          </ChartBox>
-        </div>
-      </div>
+      </main>
+      <Footer />
+      <ChatbotPopup deviceId={rawId} />
     </div>
   );
 }
 
 export default function ReportsPage() {
   return (
-    <Suspense fallback={<div>Loading Reports...</div>}>
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <p className="text-gray-400 font-medium animate-pulse">Loading Reports...</p>
+      </div>
+    }>
       <ReportsContent />
     </Suspense>
   );
 }
 
-function StatCard({ title, value, icon, iconBg }) {
+function StatCard({ title, value, icon, gradient, iconBg, iconColor }) {
   return (
-    <Card className="bg-white p-6 rounded-[2rem] border-none shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-40">
-      <div className={`${iconBg} w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg shadow-slate-200`}>{icon}</div>
+    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-gray-100 flex flex-col justify-between">
+      <div className={`${iconBg} ${iconColor} p-2 sm:p-3 rounded-xl w-fit mb-3`}>{icon}</div>
       <div>
-        <p className="text-[10px] uppercase text-slate-400 font-black tracking-[0.15em] mb-1">{title}</p>
-        <p className="text-2xl font-black tracking-tighter text-slate-900">{value}</p>
+        <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">{title}</p>
+        <p className={`text-2xl sm:text-3xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>{value}</p>
       </div>
-    </Card>
+    </div>
   );
 }
 
-function ChartBox({ title, children, hasData, icon, iconBg }) {
+function ChartBox({ title, children, hasData, icon, iconBg, iconColor }) {
   return (
-    <Card className="bg-white rounded-[2.5rem] p-8 border-none shadow-sm flex flex-col h-[480px]">
-      <div className="flex items-center mb-10">
-        <div className={`${iconBg} p-2.5 rounded-xl text-white mr-4 shadow-md`}>{icon}</div>
-        <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest italic">{title}</h3>
+    <Card className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col h-[420px] hover:shadow-xl transition-all duration-300">
+      <div className="flex items-center gap-3 mb-6">
+        <div className={`${iconBg} ${iconColor} p-2.5 rounded-xl`}>{icon}</div>
+        <h3 className="text-base font-bold text-gray-800">{title}</h3>
       </div>
       <div className="flex-1 w-full flex items-center justify-center">
         {!hasData ? <p className="text-xs font-bold text-slate-300 uppercase tracking-widest">No Active Records Found</p> : <ResponsiveContainer width="100%" height="100%">{children}</ResponsiveContainer>}
