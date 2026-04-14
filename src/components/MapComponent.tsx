@@ -58,30 +58,10 @@ const MapComponent: React.FC = () => {
       health: 0,
       coordinates: { lat: 28.5431, lng: 77.2068 } // Hauz Khas Metro Gate 1
     },
-    {
-      id: 6,
-      name: 'RK Puram Sector 5',
-      location: 'RK Puram Sector 5',
-      status: 'good',
-      health: 81,
-      coordinates: { lat: 28.5640, lng: 77.1825 } // RK Puram Sector 5
-    },
-    {
-      id: 7,
-      name: 'IIT Delhi Campus',
-      location: 'IIT Delhi',
-      status: 'excellent',
-      health: 96,
-      coordinates: { lat: 28.5458, lng: 77.1931 } // IIT Delhi
-    },
-    {
-      id: 8,
-      name: 'Panchsheel Park Metro',
-      location: 'Panchsheel Park Metro Station',
-      status: 'good',
-      health: 87,
-      coordinates: { lat: 28.5355, lng: 77.2162 } // Panchsheel Park Metro Station
-    }
+    { id: 6, name: 'Piccadily back side parking', location: 'Sector 34 Chandigarh', status: 'good',health: 85, coordinates: { lat: 30.723361, lng: 76.768370 } },
+    { id: 7, name: 'Passport office front side parking', location: 'Sector 34 Chandigarh', status: 'excellent', health: 78, coordinates: { lat: 30.7242732, lng: 76.7694117 } },
+    { id: 8, name: 'Piccadily multiplex II Parking Gun 1', location: 'Sector 34 Chandigarh', status: 'excellent', health: 98, coordinates: { lat: 30.7238258, lng: 76.7676255} },
+    { id: 9, name: 'Sapna Terminal - Okhla', location: 'Okhla Industrial Estate, Phase III', status: 'good', health: 80, coordinates: { lat: 28.5594, lng: 77.2444 } },
   ];
 
   const getStatusColor = (status: string) => {
