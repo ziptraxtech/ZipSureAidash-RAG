@@ -261,9 +261,10 @@ function ChatbotPopupInner({ deviceId }) {
   );
 }
 
-// Outer guard — only mounts the inner component on /report/dashboard
+// Outer guard — only mounts the inner component on /report/* pages
+const REPORT_PATHS = ["/report/dashboard", "/report/analytics", "/report/reports", "/report/payment-plans"];
 export default function ChatbotPopup({ deviceId = "9" }) {
   const pathname = usePathname();
-  if (pathname !== "/report/dashboard") return null;
+  if (!REPORT_PATHS.some(p => pathname.startsWith(p))) return null;
   return <ChatbotPopupInner deviceId={deviceId} />;
 }
