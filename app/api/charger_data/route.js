@@ -90,7 +90,7 @@ export async function GET(request) {
 
       // ── Coulomb counting (discharging perspective) ─────────────────────────
       const socDelta = (current * dtHours / Q_NOM_AH) * 100;
-      soc            = Math.min(100, Math.max(0, soc - socDelta));
+      soc = Math.min(100, Math.max(0, soc - socDelta));
 
       // ── Energy accumulation ────────────────────────────────────────────────
       const energyStep  = VOLTAGE * current * dtHours;

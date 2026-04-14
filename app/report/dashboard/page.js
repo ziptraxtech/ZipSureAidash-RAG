@@ -16,6 +16,7 @@ const TopNavigationBar = dynamic(() => import('@/components/TopNavigationBar'), 
   loading: () => <div className="h-20 w-full animate-pulse bg-blue-600/20" /> 
 });
 const ChargerMap = dynamic(() => import('@/components/MapComponent'), { ssr: false });
+const ChatbotPopup = dynamic(() => import('@/components/ChatbotPopup'), { ssr: false });
 
 const formatLastSync = (dateString) => {
   if (!dateString) return "OFFLINE";
@@ -288,6 +289,7 @@ function DashboardContent() {
           </div>
         </div>
       </main>
+      <ChatbotPopup deviceId={rawId} />
     </div>
   );
 }
