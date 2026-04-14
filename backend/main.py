@@ -1,32 +1,29 @@
 import os
 import json
 import sys
+import time
 from uuid import uuid4
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import traceback 
+import traceback
 
-# --- NEW IMPORTS ADDED HERE ---
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
-# --- 1. INITIALIZE APP IMMEDIATELY ---
 app = FastAPI()
 
-# --- 2. ADD MIDDLEWARE ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["Content-Disposition"] 
+    expose_headers=["Content-Disposition"]
 )
 
 load_dotenv()
 
-# --- 3. SAFE IMPORT FOR RAG ---
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 try:
@@ -37,11 +34,65 @@ except Exception as e:
     traceback.print_exc()
     def build_rag_chain(*args, **kwargs):
         return None
-    
-# Global history store
-chat_histories = {}
 
-# --- 4. ROUTES ---
+# --- Caches ---
+# RAG chain cache: device_id -> chain (built once, reused)
+_rag_chain_cache: dict = {}
+
+# Session history cache: session_id -> {"history": ChatMessageHistory, "last_access": float}
+_session_cache: dict = {}
+
+SESSION_TTL_SECONDS = 3600  # 1 hour
+
+
+def get_or_create_history(session_id: str) -> ChatMessageHistory:
+    """Return existing session history or create a new one."""
+    now = time.time()
+    if session_id in _session_cache:
+        _session_cache[session_id]["last_access"] = now
+        return _session_cache[session_id]["history"]
+    history = ChatMessageHistory()
+    _session_cache[session_id] = {"history": history, "last_access": now}
+    return history
+
+
+def evict_expired_sessions():
+    """Remove sessions that haven't been accessed within SESSION_TTL_SECONDS."""
+    cutoff = time.time() - SESSION_TTL_SECONDS
+    expired = [sid for sid, val in _session_cache.items() if val["last_access"] < cutoff]
+    for sid in expired:
+        del _session_cache[sid]
+    if expired:
+        print(f"LOG: Evicted {len(expired)} expired session(s)")
+
+
+def get_or_build_rag_chain(device_id, device_summary=None, current_datetime=None):
+    """
+    Return a RAG chain for the given device_id.
+    - Summary chains (devices 1–8): rebuilt every request (data + time changes).
+    - Pinecone chain (device 9 / sapna_charger): cached indefinitely.
+    """
+    if device_summary:
+        print(f"LOG: Building summary chain for device_id={device_id!r}")
+        chain = build_rag_chain(device_id=device_id, device_summary=device_summary,
+                                current_datetime=current_datetime)
+        if chain is None:
+            raise RuntimeError("Summary chain initialization returned None")
+        return chain
+
+    cache_key = device_id or "__all__"
+    if cache_key not in _rag_chain_cache:
+        print(f"LOG: Building Pinecone chain for device_id={device_id!r} (cache miss)")
+        chain = build_rag_chain(device_id=device_id)
+        if chain is None:
+            raise RuntimeError("Pinecone chain initialization returned None")
+        _rag_chain_cache[cache_key] = chain
+    else:
+        print(f"LOG: Using cached JSON chain for device_id={device_id!r}")
+    return _rag_chain_cache[cache_key]
+
+
+# --- Routes ---
 
 @app.get("/chatbot")
 @app.get("/chatbot/")
@@ -50,40 +101,39 @@ async def create_session():
     try:
         print("LOG: GET /chatbot called")
         session_id = str(uuid4())
-        # Initialize the history object
-        chat_histories[session_id] = ChatMessageHistory()
+        get_or_create_history(session_id)
         return {"session_id": session_id}
     except Exception as e:
         print(f"ERROR in /chatbot: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/ask")
 @app.post("/python_api/ask")
 async def ask_question(data: dict):
     print(f"LOG: POST /ask received data: {json.dumps(data)}")
-    
+
+    # Evict stale sessions on every request (cheap dict scan)
+    evict_expired_sessions()
+
     question = data.get("question")
-    session_id = data.get("session_id")
-    device_id = data.get("deviceId") 
+    session_id = data.get("session_id") or str(uuid4())
+    device_id = data.get("deviceId")
+    device_summary    = data.get("device_summary")
+    current_datetime  = data.get("current_datetime")
 
     if not question:
         raise HTTPException(status_code=400, detail="Question required")
 
-    # 1. DYNAMIC INITIALIZATION 
+    # 1. Get (or build) the appropriate RAG chain
     try:
-        current_rag_chain = build_rag_chain(device_id=device_id) 
-        if current_rag_chain is None:
-            raise Exception("RAG Chain is not initialized properly.")
+        current_rag_chain = get_or_build_rag_chain(device_id, device_summary, current_datetime)
     except Exception as e:
-        print(f"ERROR during RAG setup: {str(e)}")
+        print(f"ERROR during RAG setup: {e}")
         raise HTTPException(status_code=500, detail="Failed to initialize AI context.")
 
-    # 2. SESSION HISTORY
-    if not session_id or session_id not in chat_histories:
-        session_id = session_id or str(uuid4())
-        chat_histories[session_id] = ChatMessageHistory()
-    
-    history = chat_histories[session_id]
+    # 2. Get or create session history
+    history = get_or_create_history(session_id)
 
     conversational_chain = RunnableWithMessageHistory(
         current_rag_chain,
@@ -98,9 +148,9 @@ async def ask_question(data: dict):
             {"input": question},
             {"configurable": {"session_id": session_id}},
         )
-        
+
         answer = response.get("answer", "No response available.")
-        
+
         return JSONResponse({
             "session_id": session_id,
             "question": question,
@@ -108,6 +158,6 @@ async def ask_question(data: dict):
             "device_context": device_id
         })
     except Exception as e:
-        print(f"ERROR during invoke: {str(e)}")
+        print(f"ERROR during invoke: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
