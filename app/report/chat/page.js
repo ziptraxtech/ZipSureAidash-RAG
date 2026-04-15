@@ -56,13 +56,37 @@ function ChatContent() {
   const deviceId = searchParams.get("device") || "9";
   const info = DEVICE_INFO[deviceId] || { name: `Charger ${deviceId}`, location: "Unknown" };
 
-  const [messages, setMessages]     = useState(() => [makeWelcomeMessage(deviceId)]);
+  const STORAGE_KEY = `zipai_chat_${deviceId}`;
+
+  const [messages, setMessages]     = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(`zipai_chat_${deviceId}`);
+      if (saved) {
+        const { messages: saved_msgs } = JSON.parse(saved);
+        return saved_msgs.map(m => ({ ...m, createdAt: m.createdAt ? new Date(m.createdAt) : null }));
+      }
+    } catch {}
+    return [makeWelcomeMessage(deviceId)];
+  });
   const [isTyping, setIsTyping]     = useState(false);
-  const [sessionId, setSessionId]   = useState(null);
+  const [sessionId, setSessionId]   = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(`zipai_chat_${deviceId}`);
+      if (saved) return JSON.parse(saved).sessionId || null;
+    } catch {}
+    return null;
+  });
   const [errorMsg, setErrorMsg]     = useState(null);
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Keep sessionStorage in sync as new messages arrive
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ messages, sessionId }));
+    } catch {}
+  }, [messages, sessionId, STORAGE_KEY]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -73,6 +97,7 @@ function ChatContent() {
     setSessionId(null);
     setErrorMsg(null);
     setInputValue("");
+    try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
   };
 
   const sendMessage = async (text) => {

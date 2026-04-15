@@ -18,50 +18,15 @@ const MapComponent: React.FC = () => {
 
   // Device data with South Delhi coordinates
   const devices: Device[] = [
-    {
-      id: 1,
-      name: 'Andheria More Charging Hub',
-      location: 'CDR Chowk, Near Chattarpur Metro',
-      status: 'critical',
-      health: 45,
-      coordinates: { lat: 28.5063, lng: 77.1756 } // CDR Chowk near Chattarpur Metro
-    },
-    {
-      id: 2,
-      name: 'Hauz Khas District Center',
-      location: 'Hauz Khas Metro Station, 1km ahead',
-      status: 'excellent',
-      health: 92,
-      coordinates: { lat: 28.5494, lng: 77.2066 } // Near Hauz Khas Metro, 1km ahead
-    },
-    {
-      id: 3,
-      name: 'Qutub Minar Charging Station',
-      location: 'Qutub Minar',
-      status: 'good',
-      health: 78,
-      coordinates: { lat: 28.5244, lng: 77.1855 } // Qutub Minar
-    },
-    {
-      id: 4,
-      name: 'TB Hospital Charging Point',
-      location: 'TB Hospital near Qutub Minar',
-      status: 'critical',
-      health: 34,
-      coordinates: { lat: 28.5180, lng: 77.1920 } // TB Hospital near Qutub Minar (1-2km away)
-    },
-    {
-      id: 5,
-      name: 'Hauz Khas Metro Gate 1',
-      location: 'Hauz Khas Metro Gate 1',
-      status: 'offline',
-      health: 0,
-      coordinates: { lat: 28.5431, lng: 77.2068 } // Hauz Khas Metro Gate 1
-    },
-    { id: 6, name: 'Piccadily back side parking', location: 'Sector 34 Chandigarh', status: 'good',health: 85, coordinates: { lat: 30.723361, lng: 76.768370 } },
-    { id: 7, name: 'Passport office front side parking', location: 'Sector 34 Chandigarh', status: 'excellent', health: 78, coordinates: { lat: 30.7242732, lng: 76.7694117 } },
-    { id: 8, name: 'Piccadily multiplex II Parking Gun 1', location: 'Sector 34 Chandigarh', status: 'excellent', health: 98, coordinates: { lat: 30.7238258, lng: 76.7676255} },
-    { id: 9, name: 'Sapna Terminal - Okhla', location: 'Okhla Industrial Estate, Phase III', status: 'good', health: 80, coordinates: { lat: 28.5594, lng: 77.2444 } },
+    { id: 1, name: 'Device 1', location: 'CDR Chowk, Near Chattarpur Metro', status: 'critical', health: 45, coordinates: { lat: 28.5063, lng: 77.1756 } },
+    { id: 2, name: 'Device 2', location: 'Hauz Khas Metro Station, Delhi', status: 'excellent', health: 88, coordinates: { lat: 28.5494, lng: 77.2066 } },
+    { id: 3, name: 'Device 3', location: 'Qutub Minar, Delhi', status: 'good', health: 92, coordinates: { lat: 28.5244, lng: 77.1855 } },
+    { id: 4, name: 'Device 4', location: 'TB Hospital near Qutub Minar, Delhi', status: 'critical', health: 89, coordinates: { lat: 28.5180, lng: 77.1920 } },
+    { id: 5, name: 'Device 5', location: 'Hauz Khas Metro Gate 1, Delhi', status: 'offline', health: null, coordinates: { lat: 28.5431, lng: 77.2068 } },
+    { id: 6, name: 'Device 6', location: 'Piccadily Back side parking, Sector 34 Chandigarh', status: 'excellent', health: 85, coordinates: { lat: 30.723361, lng: 76.768370 } },
+    { id: 7, name: 'Device 7', location: 'Passport office front side parking, Sector 34 Chandigarh', status: 'excellent', health: 85, coordinates: { lat: 30.7242732, lng: 76.7694117 } },
+    { id: 8, name: 'Device 8', location: 'Piccadily multiplex II, Sector 34 Chandigarh', status: 'excellent', health: 85, coordinates: { lat: 30.7238258, lng: 76.7676255} },
+    { id: 9, name: 'Device 9', location: 'Okhla Industrial Estate, Phase III, Delhi', status: 'good', health: 92, coordinates: { lat: 28.5594, lng: 77.2444 } },
   ];
 
   const getStatusColor = (status: string) => {

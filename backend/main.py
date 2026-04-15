@@ -2,9 +2,11 @@ import os
 import json
 import sys
 import time
+import asyncio
+from contextlib import asynccontextmanager
 from uuid import uuid4
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import traceback
@@ -12,7 +14,40 @@ import traceback
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
-app = FastAPI()
+REINDEX_INTERVAL_HOURS = 1   # re-fetch and re-embed AWS data every hour
+
+async def _reindex_loop():
+    """Background task: reindex all devices on startup, then every hour."""
+    try:
+        from reindex_devices import reindex_all_devices
+        print("LOG: Initial device reindex starting …")
+        await reindex_all_devices()
+    except Exception as e:
+        print(f"WARNING: Initial reindex failed: {e}")
+
+    while True:
+        await asyncio.sleep(REINDEX_INTERVAL_HOURS * 3600)
+        try:
+            from reindex_devices import reindex_all_devices
+            print(f"LOG: Scheduled reindex starting …")
+            await reindex_all_devices()
+        except Exception as e:
+            print(f"WARNING: Scheduled reindex failed: {e}")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Start background reindex loop on server startup
+    task = asyncio.create_task(_reindex_loop())
+    yield
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -93,6 +128,20 @@ def get_or_build_rag_chain(device_id, device_summary=None, current_datetime=None
 
 
 # --- Routes ---
+
+@app.post("/reindex")
+@app.post("/python_api/reindex")
+async def trigger_reindex(background_tasks: BackgroundTasks):
+    """Manually trigger a full re-index of all devices 1–8 from AWS."""
+    async def _run():
+        try:
+            from reindex_devices import reindex_all_devices
+            await reindex_all_devices()
+        except Exception as e:
+            print(f"ERROR in manual reindex: {e}")
+    background_tasks.add_task(_run)
+    return {"status": "reindex started", "message": "Fetching and indexing all devices in the background."}
+
 
 @app.get("/chatbot")
 @app.get("/chatbot/")

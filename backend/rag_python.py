@@ -16,8 +16,6 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
 
-# ── Shared helpers ────────────────────────────────────────────────────────────
-
 def _make_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-3-flash-preview",
