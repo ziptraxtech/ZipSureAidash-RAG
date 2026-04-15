@@ -48,13 +48,49 @@ function TypingDots() {
 function ChatbotPopupInner({ deviceId }) {
   const [open, setOpen]             = useState(false);
   const [isTyping, setIsTyping]     = useState(false);
+
+  // Auto-open after 5 seconds on first mount
+  useEffect(() => {
+    const timer = setTimeout(() => setOpen(true), 5000);
+    return () => clearTimeout(timer);
+  }, []);
   const [sessionId, setSessionId]   = useState(null);
   const [errorMsg, setErrorMsg]     = useState(null);
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  const [messages, setMessages] = useState(() => [makeWelcomeMessage(deviceId)]);
+  const STORAGE_KEY = `zipai_chat_${deviceId}`;
+
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const { messages: saved_msgs } = JSON.parse(saved);
+        return saved_msgs.map(m => ({ ...m, createdAt: m.createdAt ? new Date(m.createdAt) : null }));
+      }
+    } catch {}
+    return [makeWelcomeMessage(deviceId)];
+  });
+
+  // Restore sessionId from storage on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const { sessionId: saved_sid } = JSON.parse(saved);
+        if (saved_sid) setSessionId(saved_sid);
+      }
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist messages + sessionId to sessionStorage on every change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ messages, sessionId }));
+    } catch {}
+  }, [messages, sessionId, STORAGE_KEY]);
 
   useEffect(() => {
     if (open) {
