@@ -202,7 +202,7 @@ function ChatContent() {
         {/* Footer */}
         <div className="px-5 py-4 border-t border-white/10">
           <Link
-            href={`/report/dashboard?device=${deviceId}`}
+            href={`/stations/dashboard?device=${deviceId}`}
             className="flex items-center gap-2 text-blue-300 hover:text-white text-xs font-medium transition-colors"
           >
             <ChevronLeft size={14} />
@@ -219,7 +219,7 @@ function ChatContent() {
           <div className="flex items-center gap-3">
             {/* Mobile back */}
             <Link
-              href={`/report/dashboard?device=${deviceId}`}
+              href={`/stations/dashboard?device=${deviceId}`}
               className="lg:hidden p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
             >
               <ChevronLeft size={18} />

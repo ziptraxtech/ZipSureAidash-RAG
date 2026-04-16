@@ -4,7 +4,8 @@ import Header from "@/src/components/Header";
 import StatsCards from "@/src/components/StatsCards";
 import RealTimeIndicators from "@/src/components/RealTimeIndicators";
 import ChartsComponent from "@/src/components/ChartsComponent";
-import MapComponent from "@/src/components/MapComponent";
+import dynamic from "next/dynamic";
+const MapComponent = dynamic(() => import("@/src/components/MapComponent"), { ssr: false });
 import Footer from "@/src/components/Footer";
 
 export default function HomePage() {
