@@ -1,11 +1,69 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Zap, Settings, Bell, Menu, X } from 'lucide-react';
 import { UserButton } from '@clerk/nextjs';
 
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+// Must match initialDevices in DeviceCards.tsx
+const INITIAL_STATUSES: Record<number, 'excellent' | 'good' | 'warning' | 'critical' | 'offline'> = {
+  1: 'good', 2: 'good', 3: 'excellent', 4: 'excellent', 5: 'good',
+  6: 'good', 7: 'excellent', 8: 'excellent', 9: 'excellent',
+};
+
+function getApiUrl(id: number): string {
+  if (id === 1) return '/api/charger_data_1';
+  if (id === 9) return '/api/sapna_charger';
+  return `/api/charger_data?device=device${id}`;
+}
+
 const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [stats, setStats] = useState({ total: 9, online: 0, offline: 0 });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchStats = async () => {
+      const deviceIds = Object.keys(INITIAL_STATUSES).map(Number);
+
+      const results = await Promise.allSettled(
+        deviceIds.map(id =>
+          fetch(getApiUrl(id), { signal: AbortSignal.timeout(15000) })
+            .then(r => { if (!r.ok) throw new Error('fetch failed'); return r.json(); })
+            .then(data => {
+              const points: { datetime: string }[] = data.points || [];
+              const valid = points.filter(p => !p.datetime.startsWith('1970'));
+              if (valid.length === 0) return null;
+              return new Date(valid[valid.length - 1].datetime);
+            })
+        )
+      );
+
+      if (cancelled) return;
+
+      let online = 0;
+      let offline = 0;
+      const now = Date.now();
+
+      deviceIds.forEach((id, i) => {
+        const r = results[i];
+        // Only mark offline if fetch succeeded and last update is stale (>30 days)
+        // Matches DeviceCards logic: failed fetch keeps initial status (all are non-offline)
+        if (r.status === 'fulfilled' && r.value !== null && (now - r.value.getTime()) > THIRTY_DAYS_MS) {
+          offline++;
+        } else {
+          online++;
+        }
+      });
+
+      setStats({ total: deviceIds.length, online, offline });
+    };
+
+    fetchStats();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <header className="zipsure-gradient shadow-xl border-b border-blue-600/20">
@@ -26,7 +84,7 @@ const Header: React.FC = () => {
           <nav className="hidden lg:flex items-center space-x-8">
             <a href="/dashboard" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Dashboard</a>
             <a href="#analytics" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Analytics</a>
-            <a href="/report" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Reports</a>
+            <a href="/stations" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Stations</a>
             <a href="#settings" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Settings</a>
           </nav>
 
@@ -34,17 +92,17 @@ const Header: React.FC = () => {
           <div className="hidden md:flex items-center space-x-4">
             <div className="flex items-center space-x-3 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/20">
               <div className="text-center">
-                <div className="text-xl font-bold text-white">8</div>
+                <div className="text-xl font-bold text-white">{stats.total}</div>
                 <div className="text-xs text-blue-100">Stations</div>
               </div>
               <div className="w-px h-8 bg-white/20"></div>
               <div className="text-center">
-                <div className="text-xl font-bold text-green-300">5</div>
+                <div className="text-xl font-bold text-green-300">{stats.online}</div>
                 <div className="text-xs text-blue-100">Online</div>
               </div>
               <div className="w-px h-8 bg-white/20"></div>
               <div className="text-center">
-                <div className="text-xl font-bold text-red-300">3</div>
+                <div className="text-xl font-bold text-red-300">{stats.offline}</div>
                 <div className="text-xs text-blue-100">Offline</div>
               </div>
             </div>
@@ -75,15 +133,15 @@ const Header: React.FC = () => {
         <div className="md:hidden mt-3">
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2.5 border border-white/20">
-              <div className="text-base font-bold text-white">8</div>
+              <div className="text-base font-bold text-white">{stats.total}</div>
               <div className="text-[10px] text-blue-100">Total</div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2.5 border border-white/20">
-              <div className="text-base font-bold text-green-300">5</div>
+              <div className="text-base font-bold text-green-300">{stats.online}</div>
               <div className="text-[10px] text-blue-100">Online</div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2.5 border border-white/20">
-              <div className="text-base font-bold text-red-300">3</div>
+              <div className="text-base font-bold text-red-300">{stats.offline}</div>
               <div className="text-[10px] text-blue-100">Offline</div>
             </div>
           </div>
@@ -94,7 +152,7 @@ const Header: React.FC = () => {
           <nav className="md:hidden mt-3 border-t border-white/20 pt-3 flex flex-col space-y-1">
             <a href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Dashboard</a>
             <a href="#analytics" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Analytics</a>
-            <a href="/report" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Reports</a>
+            <a href="/stations" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Stations</a>
             <a href="#settings" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Settings</a>
           </nav>
         )}

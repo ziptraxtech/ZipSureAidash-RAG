@@ -189,7 +189,7 @@ function ChatbotPopupInner({ deviceId }) {
           </div>
           <div className="flex items-center gap-1">
             <Link
-              href={`/report/chat?device=${deviceId}`}
+              href={`/stations/chat?device=${deviceId}`}
               title="Open full chat"
               className="text-blue-200 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors"
             >
@@ -298,7 +298,7 @@ function ChatbotPopupInner({ deviceId }) {
 }
 
 // Outer guard — only mounts the inner component on /report/* pages
-const REPORT_PATHS = ["/report/dashboard", "/report/analytics", "/report/reports", "/report/payment-plans"];
+const REPORT_PATHS = ["/stations/dashboard", "/stations/analytics", "/stations/reports", "/stations/payment-plans"];
 export default function ChatbotPopup({ deviceId = "9" }) {
   const pathname = usePathname();
   if (!REPORT_PATHS.some(p => pathname.startsWith(p))) return null;

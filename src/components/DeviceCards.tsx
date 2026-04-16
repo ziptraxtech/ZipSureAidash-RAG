@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { MapPin, BarChart3, Clock, AlertTriangle } from 'lucide-react';
 
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
 interface Device {
   id: number;
   name: string;
@@ -9,6 +11,7 @@ interface Device {
   health: number | null;
   status: 'excellent' | 'good' | 'warning' | 'critical' | 'offline';
   lastUpdate: string;
+  lastDatetime: Date | null;
   reportAvailable: boolean;
 }
 
@@ -16,7 +19,7 @@ type DeviceEventLogs = Record<number, string[]>;
 
 const getApiUrl = (id: number): string => {
   if (id === 1) return '/api/charger_data_1';
-  if (id === 9) return '/api/charger_data?device=sapna_charger';
+  if (id === 9) return '/api/sapna_charger';
   return `/api/charger_data?device=device${id}`;
 };
 
@@ -31,7 +34,7 @@ const getRelativeTime = (datetime: string): string => {
 };
 
 const DeviceCards: React.FC = () => {
-  const reportBaseUrl = '/report/dashboard?device=';
+  const reportBaseUrl = '/stations/dashboard?device=';
   const initialDevices: Device[] = useMemo(() => [
     {
       id: 1,
@@ -40,6 +43,7 @@ const DeviceCards: React.FC = () => {
       health: 85,
       status: 'good',
       lastUpdate: '3 min ago',
+      lastDatetime: null,
       reportAvailable: true
     },
     {
@@ -49,6 +53,7 @@ const DeviceCards: React.FC = () => {
       health: 88,
       status: 'good',
       lastUpdate: '2 min ago',
+      lastDatetime: null,
       reportAvailable: true
     },
     {
@@ -58,6 +63,7 @@ const DeviceCards: React.FC = () => {
       health: 92,
       status: 'excellent',
       lastUpdate: '1 min ago',
+      lastDatetime: null,
       reportAvailable: true
     },
     {
@@ -67,6 +73,7 @@ const DeviceCards: React.FC = () => {
       health: 89,
       status: 'excellent',
       lastUpdate: '1 min ago',
+      lastDatetime: null,
       reportAvailable: true
     },
     {
@@ -76,6 +83,7 @@ const DeviceCards: React.FC = () => {
       health: 80,
       status: 'good',
       lastUpdate: '2 min ago',
+      lastDatetime: null,
       reportAvailable: true
     },
     {
@@ -85,6 +93,7 @@ const DeviceCards: React.FC = () => {
       health: 85,
       status: 'good',
       lastUpdate: '3 min ago',
+      lastDatetime: null,
       reportAvailable: true
     },
     {
@@ -94,6 +103,7 @@ const DeviceCards: React.FC = () => {
       health: 90,
       status: 'excellent',
       lastUpdate: '2 min ago',
+      lastDatetime: null,
       reportAvailable: true
     },
     {
@@ -103,6 +113,7 @@ const DeviceCards: React.FC = () => {
       health: 100,
       status: 'excellent',
       lastUpdate: '1 min ago',
+      lastDatetime: null,
       reportAvailable: true
     },
     {
@@ -112,6 +123,7 @@ const DeviceCards: React.FC = () => {
       health: 91,
       status: 'excellent',
       lastUpdate: '1 min ago',
+      lastDatetime: null,
       reportAvailable: true
     }
   ], []);
@@ -275,7 +287,7 @@ const DeviceCards: React.FC = () => {
     };
   }, [initialDevices]);
 
-  // Fetch real last-update timestamps for all devices
+  // Fetch real last-update timestamps for all devices, then sort ascending by age
   useEffect(() => {
     const fetchLastUpdates = async () => {
       const results = await Promise.allSettled(
@@ -287,19 +299,38 @@ const DeviceCards: React.FC = () => {
           const data = await res.json();
           const points: { datetime: string }[] = data.points || [];
           const validPoints = points.filter(p => !p.datetime.startsWith('1970'));
-          if (validPoints.length === 0) return { id: device.id, lastUpdate: 'No data' };
+          if (validPoints.length === 0) return { id: device.id, lastUpdate: 'No data', lastDatetime: null };
           const last = validPoints[validPoints.length - 1];
-          return { id: device.id, lastUpdate: getRelativeTime(last.datetime) };
+          const lastDatetime = new Date(last.datetime);
+          return { id: device.id, lastUpdate: getRelativeTime(last.datetime), lastDatetime };
         })
       );
 
-      setDevices(prev => prev.map(device => {
-        const match = results[initialDevices.findIndex(d => d.id === device.id)];
-        if (match?.status === 'fulfilled') {
-          return { ...device, lastUpdate: match.value.lastUpdate };
-        }
-        return { ...device, lastUpdate: 'Offline' };
-      }));
+      setDevices(prev => {
+        const updated = prev.map(device => {
+          const idx = initialDevices.findIndex(d => d.id === device.id);
+          const match = results[idx];
+          if (match?.status === 'fulfilled') {
+            const { lastUpdate, lastDatetime } = match.value;
+            const isStale = lastDatetime !== null && (Date.now() - lastDatetime.getTime()) > THIRTY_DAYS_MS;
+            return {
+              ...device,
+              lastUpdate,
+              lastDatetime,
+              status: isStale ? 'offline' as const : device.status,
+            };
+          }
+          return { ...device, lastUpdate: 'Offline', lastDatetime: null };
+        });
+
+        // Sort 0→100: most recently updated first (null = no data → comes last)
+        return [...updated].sort((a, b) => {
+          if (!a.lastDatetime && !b.lastDatetime) return 0;
+          if (!a.lastDatetime) return 1;
+          if (!b.lastDatetime) return -1;
+          return b.lastDatetime.getTime() - a.lastDatetime.getTime();
+        });
+      });
     };
 
     fetchLastUpdates();
@@ -361,13 +392,13 @@ const DeviceCards: React.FC = () => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-      {devices.map((device) => (
+      {devices.map((device, sortedIndex) => (
         <div key={device.id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300 border border-gray-100 hover:border-gray-200">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <span className={getStatusIndicator(device.status)}></span>
-                <h3 className="text-lg font-bold text-gray-800">{device.name}</h3>
+                <h3 className="text-lg font-bold text-gray-800">Device {sortedIndex + 1}</h3>
               </div>
               <div className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${getStatusColor(device.status)}`}>
                 {device.status.charAt(0).toUpperCase() + device.status.slice(1)}

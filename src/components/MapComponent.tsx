@@ -1,167 +1,77 @@
-import React, { useState } from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import { MapPin, ExternalLink, Navigation } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
 interface Device {
   id: number;
   name: string;
   location: string;
   status: 'excellent' | 'good' | 'warning' | 'critical' | 'offline';
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
+  coordinates: { lat: number; lng: number };
   health: number | null;
 }
+
+const DEVICES: Device[] = [
+  { id: 1, name: 'Device 1', location: 'CDR Chowk, Near Chattarpur Metro',                       status: 'critical',  health: 45,   coordinates: { lat: 28.5063,    lng: 77.1756    } },
+  { id: 2, name: 'Device 2', location: 'Hauz Khas Metro Station, Delhi',                          status: 'excellent', health: 88,   coordinates: { lat: 28.5494,    lng: 77.2066    } },
+  { id: 3, name: 'Device 3', location: 'Qutub Minar, Delhi',                                      status: 'good',      health: 92,   coordinates: { lat: 28.5244,    lng: 77.1855    } },
+  { id: 4, name: 'Device 4', location: 'TB Hospital near Qutub Minar, Delhi',                     status: 'critical',  health: 89,   coordinates: { lat: 28.5180,    lng: 77.1920    } },
+  { id: 5, name: 'Device 5', location: 'Hauz Khas Metro Gate 1, Delhi',                           status: 'offline',   health: null, coordinates: { lat: 28.5431,    lng: 77.2068    } },
+  { id: 6, name: 'Device 6', location: 'Piccadily Back side parking, Sector 34 Chandigarh',       status: 'excellent', health: 85,   coordinates: { lat: 30.723361,  lng: 76.768370  } },
+  { id: 7, name: 'Device 7', location: 'Passport office front side parking, Sector 34 Chandigarh',status: 'excellent', health: 85,   coordinates: { lat: 30.7242732, lng: 76.7694117 } },
+  { id: 8, name: 'Device 8', location: 'Piccadily multiplex II, Sector 34 Chandigarh',            status: 'excellent', health: 85,   coordinates: { lat: 30.7238258, lng: 76.7676255 } },
+  { id: 9, name: 'Device 9', location: 'Okhla Industrial Estate, Phase III, Delhi',               status: 'good',      health: 92,   coordinates: { lat: 28.5594,    lng: 77.2444    } },
+];
+
+// Dynamically import react-leaflet components to avoid SSR issues
+const LeafletMap = dynamic(() => import('./LeafletMap'), { ssr: false, loading: () => (
+  <div className="w-full h-full flex items-center justify-center bg-blue-50 rounded-lg">
+    <p className="text-sm text-gray-500 animate-pulse">Loading map…</p>
+  </div>
+)});
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'excellent': return '#10B981';
+    case 'good':      return '#10B981';
+    case 'warning':   return '#F59E0B';
+    case 'critical':  return '#EF4444';
+    case 'offline':   return '#6B7280';
+    default:          return '#6B7280';
+  }
+};
+
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case 'excellent': return 'Excellent';
+    case 'good':      return 'Good';
+    case 'warning':   return 'Warning';
+    case 'critical':  return 'Critical';
+    case 'offline':   return 'Offline';
+    default:          return 'Unknown';
+  }
+};
 
 const MapComponent: React.FC = () => {
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
 
-  // Device data with South Delhi coordinates
-  const devices: Device[] = [
-    { id: 1, name: 'Device 1', location: 'CDR Chowk, Near Chattarpur Metro', status: 'critical', health: 45, coordinates: { lat: 28.5063, lng: 77.1756 } },
-    { id: 2, name: 'Device 2', location: 'Hauz Khas Metro Station, Delhi', status: 'excellent', health: 88, coordinates: { lat: 28.5494, lng: 77.2066 } },
-    { id: 3, name: 'Device 3', location: 'Qutub Minar, Delhi', status: 'good', health: 92, coordinates: { lat: 28.5244, lng: 77.1855 } },
-    { id: 4, name: 'Device 4', location: 'TB Hospital near Qutub Minar, Delhi', status: 'critical', health: 89, coordinates: { lat: 28.5180, lng: 77.1920 } },
-    { id: 5, name: 'Device 5', location: 'Hauz Khas Metro Gate 1, Delhi', status: 'offline', health: null, coordinates: { lat: 28.5431, lng: 77.2068 } },
-    { id: 6, name: 'Device 6', location: 'Piccadily Back side parking, Sector 34 Chandigarh', status: 'excellent', health: 85, coordinates: { lat: 30.723361, lng: 76.768370 } },
-    { id: 7, name: 'Device 7', location: 'Passport office front side parking, Sector 34 Chandigarh', status: 'excellent', health: 85, coordinates: { lat: 30.7242732, lng: 76.7694117 } },
-    { id: 8, name: 'Device 8', location: 'Piccadily multiplex II, Sector 34 Chandigarh', status: 'excellent', health: 85, coordinates: { lat: 30.7238258, lng: 76.7676255} },
-    { id: 9, name: 'Device 9', location: 'Okhla Industrial Estate, Phase III, Delhi', status: 'good', health: 92, coordinates: { lat: 28.5594, lng: 77.2444 } },
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'excellent': return '#10B981'; // green-500
-      case 'good': return '#10B981'; // green-500  
-      case 'warning': return '#F59E0B'; // amber-500
-      case 'critical': return '#EF4444'; // red-500
-      case 'offline': return '#6B7280'; // gray-500
-      default: return '#6B7280'; // gray-500
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'excellent': return 'Excellent';
-      case 'good': return 'Good';
-      case 'warning': return 'Warning';
-      case 'critical': return 'Critical';
-      case 'offline': return 'Offline';
-      default: return 'Unknown';
-    }
-  };
-
   const openInGoogleMaps = (device: Device) => {
-    const url = `https://www.google.com/maps/search/?api=1&query=${device.coordinates.lat},${device.coordinates.lng}`;
-    window.open(url, '_blank');
+    window.open(
+      `https://www.google.com/maps/search/?api=1&query=${device.coordinates.lat},${device.coordinates.lng}`,
+      '_blank'
+    );
   };
 
   const openFullMap = () => {
-    // Create Google Maps URL with all markers
-    const markers = devices.map(device => {
-      return `${device.coordinates.lat},${device.coordinates.lng}`;
-    }).join('|');
-    
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${markers}`;
-    window.open(url, '_blank');
-  };
-
-  // Render the map component with embedded markers
-
-  // Render the map component with truly embedded markers
-  const renderMap = () => {
-    // Use an actual Leaflet map embedded via data URL
-    const createLeafletMap = () => {
-      const mapHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        body { margin: 0; padding: 0; }
-        #map { height: 100vh; width: 100vw; }
-    </style>
-</head>
-<body>
-    <div id="map"></div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([28.5755, 77.1600], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        
-        // Define marker colors based on status
-        var markers = [
-          ${devices.map((device, index) => `
-          {
-            lat: ${device.coordinates.lat},
-            lng: ${device.coordinates.lng},
-            name: "${device.name}",
-            location: "${device.location}",
-            status: "${device.status}",
-            id: ${device.id}
-          }`).join(',')}
-        ];
-        
-        markers.forEach(function(device, index) {
-          var color = device.status === 'offline' ? 'red' : 
-                     device.status === 'critical' ? 'red' :
-                     device.status === 'warning' ? 'orange' : 'green';
-          
-          var marker = L.marker([device.lat, device.lng]).addTo(map);
-          marker.bindPopup('<b>' + device.name + '</b><br/>' + device.location + '<br/>Status: ' + device.status);
-        });
-    </script>
-</body>
-</html>`;
-      
-      return 'data:text/html;charset=utf-8,' + encodeURIComponent(mapHtml);
-    };
-
-    return (
-      <div className="w-full h-full relative bg-blue-50">
-        {/* Embedded Leaflet map with real markers */}
-        <iframe
-          width="100%"
-          height="100%"
-          style={{ border: 0 }}
-          src={createLeafletMap()}
-          title="EV Charging Stations Map - South Delhi"
-          className="rounded-lg"
-          sandbox="allow-scripts"
-        ></iframe>
-        
-        {/* Device status list overlay */}
-        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white bg-opacity-95 backdrop-blur-sm rounded-lg p-2 sm:p-3 shadow-lg w-36 sm:max-w-xs border border-gray-200 max-h-[80%] overflow-y-auto">
-          <h3 className="text-xs sm:text-sm font-semibold text-gray-800 mb-1.5 flex items-center">
-            <MapPin className="mr-1 text-blue-600" size={12} />
-            Stations ({devices.length})
-          </h3>
-          <div className="space-y-1">
-            {devices.map((device) => (
-              <div
-                key={device.id}
-                className="flex items-center text-xs cursor-pointer hover:bg-gray-50 p-1 rounded gap-1"
-                onClick={() => setSelectedDevice(device)}
-              >
-                <div
-                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: getStatusColor(device.status) }}
-                ></div>
-                <span className="text-gray-600 truncate flex-1">{device.id}. {device.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    const dest = DEVICES.map(d => `${d.coordinates.lat},${d.coordinates.lng}`).join('|');
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}`, '_blank');
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-8">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div className="flex items-center min-w-0">
           <div className="bg-blue-600 p-2 rounded-lg mr-3 flex-shrink-0">
@@ -178,14 +88,12 @@ const MapComponent: React.FC = () => {
         </button>
       </div>
 
-      <div className="relative rounded-xl overflow-hidden border border-gray-200 mb-4 sm:mb-6">
-        {/* Interactive Map with Custom Markers */}
-        <div className="relative h-64 sm:h-96 bg-gradient-to-br from-blue-50 to-gray-100 rounded-lg">
-          {renderMap()}
-        </div>
+      {/* Map */}
+      <div className="relative rounded-xl overflow-hidden border border-gray-200 mb-4 sm:mb-6 h-64 sm:h-96">
+        <LeafletMap devices={DEVICES} onSelect={setSelectedDevice} />
       </div>
 
-      {/* Selected Device Info */}
+      {/* Selected device info panel */}
       {selectedDevice && (
         <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 border border-blue-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -194,7 +102,7 @@ const MapComponent: React.FC = () => {
               <p className="text-gray-600 text-sm mb-1">📍 {selectedDevice.location}</p>
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full mr-1.5" style={{ backgroundColor: getStatusColor(selectedDevice.status) }}></div>
+                  <div className="w-3 h-3 rounded-full mr-1.5" style={{ backgroundColor: getStatusColor(selectedDevice.status) }} />
                   <span className="text-sm font-medium">{getStatusLabel(selectedDevice.status)}</span>
                 </div>
                 {selectedDevice.health && (
@@ -223,20 +131,20 @@ const MapComponent: React.FC = () => {
         </div>
       )}
 
-      {/* Device list below map */}
+      {/* Device list */}
       <div>
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Device Locations</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {devices.map((device) => (
-            <div 
-              key={device.id} 
+          {DEVICES.map((device) => (
+            <div
+              key={device.id}
               className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
               onClick={() => setSelectedDevice(device)}
             >
-              <div 
+              <div
                 className="w-3 h-3 rounded-full mr-3 flex-shrink-0"
                 style={{ backgroundColor: getStatusColor(device.status) }}
-              ></div>
+              />
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-gray-900 truncate">{device.name}</p>
                 <p className="text-sm text-gray-600 truncate">{device.location}</p>
