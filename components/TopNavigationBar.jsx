@@ -37,7 +37,7 @@ const TopNavigationBar = ({
   const [isExporting, setIsExporting] = useState(false);
 
   const navLinks = [
-    { href: `/stations/dashboard?device=${rawId}`, label: "Overview" },
+    { href: `/stations/dashboard?device=${rawId}`, label: "Dashboard" },
     { href: `/stations/analytics?device=${rawId}`, label: "Analytics" },
     { href: `/stations/reports?device=${rawId}`, label: "Reports" },
     { href: `/stations/payment-plans?device=${rawId}`, label: "Payments" },
@@ -46,7 +46,11 @@ const TopNavigationBar = ({
   const handleExportPDF = async () => {
     try {
       setIsExporting(true);
+      // Signal layout to mount PDF containers if not already done
+      window.dispatchEvent(new Event("prepare-pdf-export"));
       const { generatePDF } = await import("@/lib/pdf-generator");
+      // Give dynamic imports time to mount
+      await new Promise((resolve) => setTimeout(resolve, 300));
       const reportArea = document.getElementById(exportId);
 
       if (reportArea) {

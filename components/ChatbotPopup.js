@@ -49,9 +49,13 @@ function ChatbotPopupInner({ deviceId }) {
   const [open, setOpen]             = useState(false);
   const [isTyping, setIsTyping]     = useState(false);
 
-  // Auto-open after 5 seconds on first mount
+  // Auto-open only once ever, regardless of device or page navigation
   useEffect(() => {
-    const timer = setTimeout(() => setOpen(true), 5000);
+    if (localStorage.getItem('chatbot_auto_opened')) return;
+    const timer = setTimeout(() => {
+      setOpen(true);
+      localStorage.setItem('chatbot_auto_opened', '1');
+    }, 5000);
     return () => clearTimeout(timer);
   }, []);
   const [sessionId, setSessionId]   = useState(null);
@@ -90,7 +94,7 @@ function ChatbotPopupInner({ deviceId }) {
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ messages, sessionId }));
     } catch {}
-  }, [messages, sessionId, STORAGE_KEY]);
+  }, [messages, sessionId]);
 
   useEffect(() => {
     if (open) {
