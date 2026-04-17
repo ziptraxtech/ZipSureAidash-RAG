@@ -37,7 +37,7 @@ const TopNavigationBar = ({
   const [isExporting, setIsExporting] = useState(false);
 
   const navLinks = [
-    { href: `/stations/dashboard?device=${rawId}`, label: "Dashboard" },
+    { href: `/stations/dashboard?device=${rawId}`, label: "Overview" },
     { href: `/stations/analytics?device=${rawId}`, label: "Analytics" },
     { href: `/stations/reports?device=${rawId}`, label: "Reports" },
     { href: `/stations/payment-plans?device=${rawId}`, label: "Payments" },

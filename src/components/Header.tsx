@@ -82,7 +82,7 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-8">
-            <a href="/dashboard" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Dashboard</a>
+            <a href="/dashboard" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Overview</a>
             <a href="#analytics" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Analytics</a>
             <a href="/stations" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Stations</a>
             <a href="#settings" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Settings</a>
@@ -150,7 +150,7 @@ const Header: React.FC = () => {
         {/* Mobile nav dropdown */}
         {mobileMenuOpen && (
           <nav className="md:hidden mt-3 border-t border-white/20 pt-3 flex flex-col space-y-1">
-            <a href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Dashboard</a>
+            <a href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Overview</a>
             <a href="#analytics" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Analytics</a>
             <a href="/stations" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Stations</a>
             <a href="#settings" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Settings</a>
