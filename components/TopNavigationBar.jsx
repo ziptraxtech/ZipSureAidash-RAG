@@ -37,10 +37,10 @@ const TopNavigationBar = ({
   const [isExporting, setIsExporting] = useState(false);
 
   const navLinks = [
-    { href: `/report/dashboard?device=${rawId}`, label: "Dashboard" },
-    { href: `/report/analytics?device=${rawId}`, label: "Analytics" },
-    { href: `/report/reports?device=${rawId}`, label: "Reports" },
-    { href: `/report/payment-plans?device=${rawId}`, label: "Payments" },
+    { href: `/stations/dashboard?device=${rawId}`, label: "Dashboard" },
+    { href: `/stations/analytics?device=${rawId}`, label: "Analytics" },
+    { href: `/stations/reports?device=${rawId}`, label: "Reports" },
+    { href: `/stations/payment-plans?device=${rawId}`, label: "Payments" },
   ];
 
   const handleExportPDF = async () => {
@@ -170,7 +170,7 @@ const TopNavigationBar = ({
             {/* Chat */}
             {showChat && (
               <div className="flex items-center space-x-1 border-l border-white/10 pl-2">
-                <Link href={`/report/chat?device=${rawId}`}>
+                <Link href={`/stations/chat?device=${rawId}`}>
                   <button className="p-2 text-white/70 hover:text-white"><IoChatbubblesOutline size={22} /></button>
                 </Link>
               </div>
