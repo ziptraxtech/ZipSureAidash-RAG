@@ -32,8 +32,12 @@ export async function GET(request) {
       (a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime()
     );
 
-    // ── Debug: print first and last timestamps so you can see what format
-    //          your datetimes are in and whether a day boundary exists
+    // Fast path: caller only needs the last timestamp (e.g. stations page status)
+    if (searchParams.get('lastOnly') === 'true') {
+      const last = sortedPoints.findLast(p => p.datetime && !p.datetime.startsWith('1970'));
+      return NextResponse.json({ points: last ? [{ datetime: last.datetime }] : [] });
+    }
+
     console.log(`\n--- DATA FETCHED FOR ${deviceId.toUpperCase()} ---`);
     console.log(`📅 First point : ${sortedPoints.at(0)?.datetime}`);
     console.log(`📅 Last point  : ${sortedPoints.at(-1)?.datetime}`);

@@ -1,5 +1,5 @@
 // components/MasterExportTemplate.js
-import DashboardPage from "@/app/dashboard/page";
+import DashboardPage from "@/app/overview/page";
 import AnalyticsPage from "@/app/analytics/page";
 import ReportsPage from "@/app/reports/page";
 

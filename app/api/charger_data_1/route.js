@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request) {
   const deviceId = "DEVICE-01"; // Specific ID for this route
+  const { searchParams } = new URL(request.url);
 
   try {
     const response = await fetch(
@@ -16,13 +17,17 @@ export async function GET(request) {
     const data = await response.json();
     const rawPoints = typeof data.body === 'string' ? JSON.parse(data.body) : data;
 
-    // 1. SORT DATA by combining Date (YYYY-MM-DD) and Time (HH:MM:SS)
-    // Lexicographical sort works perfectly for these ISO-style strings
     const sortedPoints = [...rawPoints].sort((a, b) => {
       const dateTimeA = `${a.date} ${a.time}`;
       const dateTimeB = `${b.date} ${b.time}`;
       return dateTimeA.localeCompare(dateTimeB);
     });
+
+    // Fast path: caller only needs the last timestamp
+    if (searchParams.get('lastOnly') === 'true') {
+      const last = sortedPoints.findLast(p => p.date && p.time);
+      return NextResponse.json({ points: last ? [{ datetime: `${last.date}T${last.time}` }] : [] });
+    }
 
     console.log(`\n--- DATA FETCHED FOR ${deviceId.toUpperCase()} ---`);
     

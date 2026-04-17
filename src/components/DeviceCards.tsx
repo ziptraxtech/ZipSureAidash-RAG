@@ -17,11 +17,22 @@ interface Device {
 
 type DeviceEventLogs = Record<number, string[]>;
 
-const getApiUrl = (id: number): string => {
-  if (id === 1) return '/api/charger_data_1';
-  if (id === 9) return '/api/sapna_charger';
-  return `/api/charger_data?device=device${id}`;
+const getApiUrl = (id: number, lastOnly = false): string => {
+  const suffix = lastOnly ? '?lastOnly=true' : '';
+  if (id === 1) return `/api/charger_data_1${suffix}`;
+  if (id === 9) return `/api/sapna_charger${suffix}`;
+  return `/api/charger_data?device=device${id}${lastOnly ? '&lastOnly=true' : ''}`;
 };
+
+const LS_KEY = 'deviceLastUpdates';
+
+function loadCache(): Record<number, string> {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; }
+}
+
+function saveCache(map: Record<number, string>) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(map)); } catch { /* ignore */ }
+}
 
 const getRelativeTime = (datetime: string): string => {
   const diffMs = Date.now() - new Date(datetime).getTime();
@@ -287,24 +298,52 @@ const DeviceCards: React.FC = () => {
     };
   }, [initialDevices]);
 
-  // Fetch real last-update timestamps for all devices, then sort ascending by age
   useEffect(() => {
+    // Apply cached values immediately so the UI shows something on first paint
+    const cache = loadCache();
+    if (Object.keys(cache).length > 0) {
+      setDevices(prev => {
+        const updated = prev.map(device => {
+          const cached = cache[device.id];
+          if (!cached) return device;
+          const lastDatetime = new Date(cached);
+          const isStale = (Date.now() - lastDatetime.getTime()) > THIRTY_DAYS_MS;
+          return { ...device, lastUpdate: getRelativeTime(cached), lastDatetime, status: isStale ? 'offline' as const : device.status };
+        });
+        return [...updated].sort((a, b) => {
+          if (!a.lastDatetime && !b.lastDatetime) return 0;
+          if (!a.lastDatetime) return 1;
+          if (!b.lastDatetime) return -1;
+          return b.lastDatetime.getTime() - a.lastDatetime.getTime();
+        });
+      });
+    }
+
     const fetchLastUpdates = async () => {
       const results = await Promise.allSettled(
         initialDevices.map(async (device) => {
-          const res = await fetch(getApiUrl(device.id), {
-            signal: AbortSignal.timeout(15000)
+          const res = await fetch(getApiUrl(device.id, true), {
+            signal: AbortSignal.timeout(8000)
           });
           if (!res.ok) throw new Error('fetch failed');
           const data = await res.json();
           const points: { datetime: string }[] = data.points || [];
-          const validPoints = points.filter(p => !p.datetime.startsWith('1970'));
+          const validPoints = points.filter(p => p.datetime && !p.datetime.startsWith('1970'));
           if (validPoints.length === 0) return { id: device.id, lastUpdate: 'No data', lastDatetime: null };
           const last = validPoints[validPoints.length - 1];
           const lastDatetime = new Date(last.datetime);
           return { id: device.id, lastUpdate: getRelativeTime(last.datetime), lastDatetime };
         })
       );
+
+      // Persist fresh timestamps to cache
+      const newCache: Record<number, string> = { ...loadCache() };
+      results.forEach((r, i) => {
+        if (r.status === 'fulfilled' && r.value.lastDatetime) {
+          newCache[initialDevices[i].id] = r.value.lastDatetime.toISOString();
+        }
+      });
+      saveCache(newCache);
 
       setDevices(prev => {
         const updated = prev.map(device => {
@@ -380,86 +419,110 @@ const DeviceCards: React.FC = () => {
     return 'text-gray-600';
   };
 
-  const getButtonStyle = (status: string, reportAvailable: boolean) => {
+  const getButtonStyle = (status: string) => {
+    if (status === 'offline') {
+      return 'bg-gray-100 text-gray-400 font-medium py-3 px-4 rounded-xl cursor-not-allowed border border-gray-200';
+    }
     if (status === 'critical') {
       return 'bg-gradient-to-r from-red-500 to-red-600 text-white font-medium py-3 px-4 rounded-xl hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5';
-    }
-    if (status === 'offline' && !reportAvailable) {
-      return 'bg-gray-100 text-gray-500 font-medium py-3 px-4 rounded-xl cursor-not-allowed border border-gray-200';
     }
     return 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-medium py-3 px-4 rounded-xl hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5';
   };
 
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-      {devices.map((device, sortedIndex) => (
-        <div key={device.id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300 border border-gray-100 hover:border-gray-200">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <span className={getStatusIndicator(device.status)}></span>
-                <h3 className="text-lg font-bold text-gray-800">Device {sortedIndex + 1}</h3>
-              </div>
-              <div className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${getStatusColor(device.status)}`}>
-                {device.status.charAt(0).toUpperCase() + device.status.slice(1)}
-              </div>
-            </div>
-            <div className="mb-4">
-              <p className="text-gray-600 mb-2 flex items-center">
-                <MapPin className="text-blue-500 mr-2" size={16} />
-                {device.location}
-              </p>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-500">EV Battery Health</p>
-                  <p className={`font-semibold ${getHealthColor(device.health, device.status)}`}>
-                    {device.health !== null ? `${device.health}%` : 'N/A'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Last Update</p>
-                  <p className="font-semibold">{device.lastUpdate}</p>
-                </div>
-              </div>
-              {device.chargerUrl && (
-                <div className="mt-3 text-xs">
-                  <p className="text-gray-500 mb-1">Live Log</p>
-                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-2 space-y-1 max-h-24 overflow-auto">
-                    {(deviceLogs[device.id] || ['No events yet']).map((logLine, index) => (
-                      <p key={`${device.id}-${index}-${logLine}`} className="font-mono text-gray-700 break-words">
-                        {logLine}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            {device.reportAvailable ? (
-              <a
-                href={`${reportBaseUrl}${device.id}`}
-                className={`w-full inline-block text-center ${getButtonStyle(device.status, device.reportAvailable)}`}
-              >
-                {device.status === 'critical' ? (
-                  <>
-                    <AlertTriangle className="inline mr-2" size={16} />
-                    View Report
-                  </>
-                ) : (
-                  <>
-                    <BarChart3 className="inline mr-2" size={16} />
-                    View Report
-                  </>
-                )}
-              </a>
-            ) : (
-              <button className={`w-full inline-block text-center ${getButtonStyle(device.status, device.reportAvailable)}`}>
-                <Clock className="inline mr-2" size={16} />
-                Coming Soon
-              </button>
-            )}
+  const onlineDevices = devices.filter(d => d.status !== 'offline');
+  const offlineDevices = devices.filter(d => d.status === 'offline');
+
+  const renderCard = (device: Device, sortedIndex: number) => (
+    <div key={device.id} className="bg-white rounded-2xl shadow-md hover:shadow-lg overflow-hidden transition-all duration-300 border border-gray-100 hover:border-gray-200">
+      <div className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center">
+            <span className={getStatusIndicator(device.status)}></span>
+            <h3 className="text-base font-bold text-gray-800">Device {sortedIndex + 1}</h3>
+          </div>
+          <div className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${getStatusColor(device.status)}`}>
+            {device.status.charAt(0).toUpperCase() + device.status.slice(1)}
           </div>
         </div>
-      ))}
+        <p className="text-gray-500 text-sm mb-3 flex items-center truncate">
+          <MapPin className="text-blue-400 mr-1.5 flex-shrink-0" size={14} />
+          {device.location}
+        </p>
+        <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+          <div className="bg-gray-50 rounded-lg p-2">
+            <p className="text-gray-400 text-xs">Battery Health</p>
+            <p className={`font-semibold ${getHealthColor(device.health, device.status)}`}>
+              {device.health !== null ? `${device.health}%` : 'N/A'}
+            </p>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-2">
+            <p className="text-gray-400 text-xs">Last Update</p>
+            <p className="font-semibold text-gray-700 text-xs">{device.lastUpdate}</p>
+          </div>
+        </div>
+        {device.chargerUrl && (
+          <div className="mb-4 text-xs">
+            <p className="text-gray-500 mb-1">Live Log</p>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-2 space-y-1 max-h-24 overflow-auto">
+              {(deviceLogs[device.id] || ['No events yet']).map((logLine, index) => (
+                <p key={`${device.id}-${index}-${logLine}`} className="font-mono text-gray-700 break-words">
+                  {logLine}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+        {device.status === 'offline' ? (
+          <button disabled className={`w-full text-center ${getButtonStyle(device.status)}`}>
+            <Clock className="inline mr-2" size={14} />
+            Offline
+          </button>
+        ) : (
+          <a
+            href={`${reportBaseUrl}${device.id}`}
+            className={`w-full inline-block text-center ${getButtonStyle(device.status)}`}
+          >
+            {device.status === 'critical' ? (
+              <>
+                <AlertTriangle className="inline mr-2" size={14} />
+                Live Report
+              </>
+            ) : (
+              <>
+                <BarChart3 className="inline mr-2" size={14} />
+                Live Report
+              </>
+            )}
+          </a>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-8">
+      {onlineDevices.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Online — {onlineDevices.length} station{onlineDevices.length !== 1 ? 's' : ''}</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            {onlineDevices.map((device, i) => renderCard(device, i))}
+          </div>
+        </div>
+      )}
+      {offlineDevices.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-2.5 h-2.5 rounded-full bg-gray-400"></div>
+            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Offline — {offlineDevices.length} station{offlineDevices.length !== 1 ? 's' : ''}</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 opacity-75">
+            {offlineDevices.map((device, i) => renderCard(device, onlineDevices.length + i))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

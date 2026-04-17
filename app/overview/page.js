@@ -1,12 +1,19 @@
 "use client";
 
 import Header from "@/src/components/Header";
-import StatsCards from "@/src/components/StatsCards";
-import RealTimeIndicators from "@/src/components/RealTimeIndicators";
-import ChartsComponent from "@/src/components/ChartsComponent";
-import dynamic from "next/dynamic";
-const MapComponent = dynamic(() => import("@/src/components/MapComponent"), { ssr: false });
 import Footer from "@/src/components/Footer";
+import dynamic from "next/dynamic";
+
+const StatsCards = dynamic(() => import("@/src/components/StatsCards"), {
+  ssr: false,
+  loading: () => <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 animate-pulse">{[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-gray-200 rounded-2xl" />)}</div>
+});
+const RealTimeIndicators = dynamic(() => import("@/src/components/RealTimeIndicators"), { ssr: false });
+const ChartsComponent = dynamic(() => import("@/src/components/ChartsComponent"), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-gray-200 rounded-2xl animate-pulse mb-6" />
+});
+const MapComponent = dynamic(() => import("@/src/components/MapComponent"), { ssr: false });
 
 export default function HomePage() {
   return (

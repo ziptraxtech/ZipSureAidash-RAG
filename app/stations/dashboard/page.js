@@ -5,9 +5,11 @@ import dynamic from "next/dynamic";
 import { Card } from "@/components/ui/card";
 import {
   Activity, Battery, Zap, TrendingUp,
-  Clock, Gauge, MapPin
+  Clock, Gauge, MapPin, ArrowLeft
 } from "lucide-react";
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
+const LineChart     = dynamic(() => import('recharts').then(m => ({ default: m.LineChart })),     { ssr: false });
+const Line          = dynamic(() => import('recharts').then(m => ({ default: m.Line })),          { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })), { ssr: false });
 import { useSearchParams } from "next/navigation";
 import Footer from "@/src/components/Footer";
 
@@ -199,15 +201,15 @@ function DashboardContent() {
     };
   }, [rawData, hasMounted, selectedDate, viewRange]);
 
-  if (!hasMounted) return null;
-
-  const stats = [
+  const stats = useMemo(() => [
     { title: 'State of Charge',  value: metrics ? `${metrics.soc}%`          : '--',       icon: <Battery size={24} />, trend: 'Live',   trendUp: true,  gradient: 'from-green-500 to-green-600',  iconBg: 'bg-green-500/10',  lineColor: '#10b981', data: metrics?.socSparkline || [] },
     { title: 'Last Current',     value: metrics ? `${metrics.lastCurrent} A`  : '--',       icon: <Activity size={24} />, trend: 'Live',  trendUp: true,  gradient: 'from-blue-500 to-blue-600',   iconBg: 'bg-blue-500/10',   lineColor: '#3b82f6', data: metrics?.sparkline || [] },
     { title: 'Last Voltage',     value: metrics ? `${metrics.lastVoltage} V`  : '--',       icon: <Zap size={24} />,     trend: 'Stable', trendUp: true,  gradient: 'from-purple-500 to-purple-600', iconBg: 'bg-purple-500/10', lineColor: '#8b5cf6', data: [{v:230},{v:235},{v:237},{v:237}] },
     { title: 'Energy Consumed',  value: metrics ? metrics.endEnergy           : '--',       icon: <Gauge size={24} />,   trend: 'Total',  trendUp: true,  gradient: 'from-cyan-500 to-cyan-600',   iconBg: 'bg-cyan-500/10',   lineColor: '#06b6d4', data: [{v:0.1},{v:0.2},{v:0.3},{v:0.38}] },
     { title: 'Session Time',     value: metrics ? metrics.sessionTime         : '--:--:--', icon: <Clock size={24} />,   trend: 'Active', trendUp: true,  gradient: 'from-amber-500 to-orange-600', iconBg: 'bg-amber-500/10',  lineColor: '#f59e0b', data: [{v:10},{v:12},{v:15},{v:17}] },
-  ];
+  ], [metrics]);
+
+  if (!hasMounted) return null;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -215,10 +217,19 @@ function DashboardContent() {
       <main className="flex-grow">
         <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div id="analytics-report-area" className="space-y-8">
+            {/* Back link */}
+            <a
+              href="/stations"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <ArrowLeft size={15} />
+              Back to Stations
+            </a>
+
             {/* Page heading */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Dashboard Overview</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Dashboard</h1>
                 <p className="text-gray-600 text-sm sm:text-base">Monitor EV charging stations in real-time</p>
               </div>
               <span className="inline-flex items-center text-xs font-medium px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 shadow-sm self-start sm:self-auto">

@@ -12,10 +12,16 @@ const INITIAL_STATUSES: Record<number, 'excellent' | 'good' | 'warning' | 'criti
   6: 'good', 7: 'excellent', 8: 'excellent', 9: 'excellent',
 };
 
+const STATS_LS_KEY = 'headerStats';
+
 function getApiUrl(id: number): string {
-  if (id === 1) return '/api/charger_data_1';
+  if (id === 1) return '/api/charger_data_1?lastOnly=true';
   if (id === 9) return '/api/sapna_charger';
-  return `/api/charger_data?device=device${id}`;
+  return `/api/charger_data?device=device${id}&lastOnly=true`;
+}
+
+function loadStats(): { total: number; online: number; offline: number } | null {
+  try { return JSON.parse(localStorage.getItem(STATS_LS_KEY) || 'null'); } catch { return null; }
 }
 
 const Header: React.FC = () => {
@@ -23,6 +29,10 @@ const Header: React.FC = () => {
   const [stats, setStats] = useState({ total: 9, online: 0, offline: 0 });
 
   useEffect(() => {
+    // Show cached counts immediately
+    const cached = loadStats();
+    if (cached) setStats(cached);
+
     let cancelled = false;
 
     const fetchStats = async () => {
@@ -30,11 +40,11 @@ const Header: React.FC = () => {
 
       const results = await Promise.allSettled(
         deviceIds.map(id =>
-          fetch(getApiUrl(id), { signal: AbortSignal.timeout(15000) })
+          fetch(getApiUrl(id), { signal: AbortSignal.timeout(8000) })
             .then(r => { if (!r.ok) throw new Error('fetch failed'); return r.json(); })
             .then(data => {
               const points: { datetime: string }[] = data.points || [];
-              const valid = points.filter(p => !p.datetime.startsWith('1970'));
+              const valid = points.filter(p => p.datetime && !p.datetime.startsWith('1970'));
               if (valid.length === 0) return null;
               return new Date(valid[valid.length - 1].datetime);
             })
@@ -47,10 +57,8 @@ const Header: React.FC = () => {
       let offline = 0;
       const now = Date.now();
 
-      deviceIds.forEach((id, i) => {
+      deviceIds.forEach((_id, i) => {
         const r = results[i];
-        // Only mark offline if fetch succeeded and last update is stale (>30 days)
-        // Matches DeviceCards logic: failed fetch keeps initial status (all are non-offline)
         if (r.status === 'fulfilled' && r.value !== null && (now - r.value.getTime()) > THIRTY_DAYS_MS) {
           offline++;
         } else {
@@ -58,7 +66,9 @@ const Header: React.FC = () => {
         }
       });
 
-      setStats({ total: deviceIds.length, online, offline });
+      const fresh = { total: deviceIds.length, online, offline };
+      setStats(fresh);
+      try { localStorage.setItem(STATS_LS_KEY, JSON.stringify(fresh)); } catch { /* ignore */ }
     };
 
     fetchStats();
@@ -82,7 +92,7 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-8">
-            <a href="/dashboard" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Overview</a>
+            <a href="/overview" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Overview</a>
             <a href="#analytics" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Analytics</a>
             <a href="/stations" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Stations</a>
             <a href="#settings" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Settings</a>
@@ -150,7 +160,7 @@ const Header: React.FC = () => {
         {/* Mobile nav dropdown */}
         {mobileMenuOpen && (
           <nav className="md:hidden mt-3 border-t border-white/20 pt-3 flex flex-col space-y-1">
-            <a href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Overview</a>
+            <a href="/overview" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Overview</a>
             <a href="#analytics" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Analytics</a>
             <a href="/stations" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Stations</a>
             <a href="#settings" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Settings</a>
