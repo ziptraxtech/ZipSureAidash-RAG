@@ -22,7 +22,7 @@ const MapComponent: React.FC<MapProps> = ({ deviceId }) => {
     { id: 2, name: 'Hauz Khas District Center', location: 'Hauz Khas Metro Station', status: 'excellent', coordinates: { lat: 28.5494, lng: 77.2066 } },
     { id: 3, name: 'Qutub Minar Charging Station', location: 'Qutub Minar', status: 'good', coordinates: { lat: 28.5244, lng: 77.1855 } },
     { id: 4, name: 'TB Hospital Charging Point', location: 'TB Hospital near Qutub Minar', status: 'critical', coordinates: { lat: 28.5180, lng: 77.1920 } },
-    { id: 5, name: 'Hauz Khas Metro Gate 1', location: 'Hauz Khas Metro Gate 1', status: 'offline', coordinates: { lat: 28.5431, lng: 77.2068 } },
+    { id: 5, name: 'Sapna Terminal - Okhla', location: 'Okhla Industrial Estate, Phase III', status: 'excellent', coordinates: { lat: 28.5594, lng: 77.2444 } },
     { id: 6, name: 'Piccadily back side parking', location: 'Sector 34 Chandigarh', status: 'Excellent', coordinates: { lat: 30.723361, lng: 76.768370 } },
     { id: 7, name: 'Passport office front side parking', location: 'Sector 34 Chandigarh', status: 'Excellent', coordinates: { lat: 30.7242732, lng: 76.7694117 } },
     { id: 8, name: 'Piccadily multiplex II Parking Gun 1', location: 'Sector 34 Chandigarh', status: 'Excellent', coordinates: { lat: 30.7238258, lng: 76.7676255} },

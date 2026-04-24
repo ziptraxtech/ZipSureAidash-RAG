@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Zap, Settings, Bell, Menu, X } from 'lucide-react';
-import { UserButton } from '@clerk/nextjs';
+import { UserButton, SignedIn, SignedOut, SignInButton, SignUpButton } from '@clerk/nextjs';
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -93,9 +93,9 @@ const Header: React.FC = () => {
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-8">
             <a href="/overview" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Overview</a>
-            <a href="#analytics" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Analytics</a>
             <a href="/stations" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Stations</a>
-            <a href="#settings" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Settings</a>
+            <a href="/payments" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Payments</a>
+            <a href="/settings" className="text-white/90 hover:text-white transition-colors duration-200 font-medium">Settings</a>
           </nav>
 
           {/* Desktop Status + Actions */}
@@ -117,19 +117,47 @@ const Header: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <button className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200">
-                <Bell size={20} />
-              </button>
-              <button className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200">
-                <Settings size={20} />
-              </button>
-              <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8" } }} />
+              <SignedIn>
+                <button className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200">
+                  <Bell size={20} />
+                </button>
+                <button className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200">
+                  <Settings size={20} />
+                </button>
+                <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8" } }} />
+              </SignedIn>
+              <SignedOut>
+                <SignInButton mode="redirect">
+                  <button className="px-5 py-2 rounded-full border border-white/60 bg-white/10 text-white font-medium text-sm hover:bg-white/20 transition-all duration-200">
+                    Login
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="redirect">
+                  <button className="px-5 py-2 rounded-full bg-teal-500 hover:bg-teal-400 text-white font-medium text-sm transition-all duration-200 shadow-lg">
+                    Signup
+                  </button>
+                </SignUpButton>
+              </SignedOut>
             </div>
           </div>
 
-          {/* Mobile right: UserButton + hamburger */}
-          <div className="flex md:hidden items-center space-x-3">
-            <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8" } }} />
+          {/* Mobile right: auth + hamburger */}
+          <div className="flex md:hidden items-center space-x-2">
+            <SignedIn>
+              <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8" } }} />
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="redirect">
+                <button className="px-3 py-1.5 rounded-full border border-white/60 bg-white/10 text-white font-medium text-xs hover:bg-white/20 transition-all">
+                  Login
+                </button>
+              </SignInButton>
+              <SignUpButton mode="redirect">
+                <button className="px-3 py-1.5 rounded-full bg-teal-500 hover:bg-teal-400 text-white font-medium text-xs transition-all shadow">
+                  Signup
+                </button>
+              </SignUpButton>
+            </SignedOut>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-white hover:bg-white/10 rounded-lg transition-all"
@@ -161,9 +189,9 @@ const Header: React.FC = () => {
         {mobileMenuOpen && (
           <nav className="md:hidden mt-3 border-t border-white/20 pt-3 flex flex-col space-y-1">
             <a href="/overview" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Overview</a>
-            <a href="#analytics" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Analytics</a>
             <a href="/stations" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Stations</a>
-            <a href="#settings" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Settings</a>
+            <a href="/payments" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Payments</a>
+            <a href="/settings" onClick={() => setMobileMenuOpen(false)} className="text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors font-medium">Settings</a>
           </nav>
         )}
       </div>

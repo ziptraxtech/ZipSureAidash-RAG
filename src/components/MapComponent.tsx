@@ -14,15 +14,15 @@ interface Device {
 }
 
 const DEVICES: Device[] = [
-  { id: 1, name: 'Device 1', location: 'CDR Chowk, Near Chattarpur Metro',                       status: 'critical',  health: 45,   coordinates: { lat: 28.5063,    lng: 77.1756    } },
-  { id: 2, name: 'Device 2', location: 'Hauz Khas Metro Station, Delhi',                          status: 'excellent', health: 88,   coordinates: { lat: 28.5494,    lng: 77.2066    } },
-  { id: 3, name: 'Device 3', location: 'Qutub Minar, Delhi',                                      status: 'good',      health: 92,   coordinates: { lat: 28.5244,    lng: 77.1855    } },
-  { id: 4, name: 'Device 4', location: 'TB Hospital near Qutub Minar, Delhi',                     status: 'critical',  health: 89,   coordinates: { lat: 28.5180,    lng: 77.1920    } },
-  { id: 5, name: 'Device 5', location: 'Hauz Khas Metro Gate 1, Delhi',                           status: 'offline',   health: null, coordinates: { lat: 28.5431,    lng: 77.2068    } },
-  { id: 6, name: 'Device 6', location: 'Piccadily Back side parking, Sector 34 Chandigarh',       status: 'excellent', health: 85,   coordinates: { lat: 30.723361,  lng: 76.768370  } },
-  { id: 7, name: 'Device 7', location: 'Passport office front side parking, Sector 34 Chandigarh',status: 'excellent', health: 85,   coordinates: { lat: 30.7242732, lng: 76.7694117 } },
-  { id: 8, name: 'Device 8', location: 'Piccadily multiplex II, Sector 34 Chandigarh',            status: 'excellent', health: 85,   coordinates: { lat: 30.7238258, lng: 76.7676255 } },
-  { id: 9, name: 'Device 9', location: 'Okhla Industrial Estate, Phase III, Delhi',               status: 'good',      health: 92,   coordinates: { lat: 28.5594,    lng: 77.2444    } },
+  // { id: 1, name: 'Device 1', location: 'CDR Chowk, Near Chattarpur Metro',                       status: 'critical',  health: 45,   coordinates: { lat: 28.5063,    lng: 77.1756    } },
+  // { id: 2, name: 'Device 2', location: 'Hauz Khas Metro Station, Delhi',                          status: 'excellent', health: 88,   coordinates: { lat: 28.5494,    lng: 77.2066    } },
+  // { id: 3, name: 'Device 3', location: 'Qutub Minar, Delhi',                                      status: 'good',      health: 92,   coordinates: { lat: 28.5244,    lng: 77.1855    } },
+  // { id: 4, name: 'Device 4', location: 'TB Hospital near Qutub Minar, Delhi',                     status: 'critical',  health: 89,   coordinates: { lat: 28.5180,    lng: 77.1920    } },
+  { id: 5, name: 'Device 4', location: 'Sapna Cinema, Phase 3 Industrial Area, Delhi',                           status: 'good',      health: 92,   coordinates: { lat: 28.5594,    lng: 77.2444    } },
+  { id: 6, name: 'Device 1', location: 'Piccadily Back side parking, Sector 34 Chandigarh',       status: 'excellent', health: 85,   coordinates: { lat: 30.723361,  lng: 76.768370  } },
+  { id: 7, name: 'Device 2', location: 'Passport office front side parking, Sector 34 Chandigarh',status: 'excellent', health: 85,   coordinates: { lat: 30.7242732, lng: 76.7694117 } },
+  { id: 8, name: 'Device 3', location: 'Piccadily multiplex II, Sector 34 Chandigarh',            status: 'excellent', health: 85,   coordinates: { lat: 30.7238258, lng: 76.7676255 } },
+  // { id: 9, name: 'Device 4', location: 'Okhla Industrial Estate, Phase III, Delhi',               status: 'good',      health: 92,   coordinates: { lat: 28.5594,    lng: 77.2444    } },
 ];
 
 // Dynamically import react-leaflet components to avoid SSR issues

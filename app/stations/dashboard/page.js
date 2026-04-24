@@ -202,7 +202,7 @@ function DashboardContent() {
   }, [rawData, hasMounted, selectedDate, viewRange]);
 
   const stats = useMemo(() => [
-    { title: 'State of Charge',  value: metrics ? `${metrics.soc}%`          : '--',       icon: <Battery size={24} />, trend: 'Live',   trendUp: true,  gradient: 'from-green-500 to-green-600',  iconBg: 'bg-green-500/10',  lineColor: '#10b981', data: metrics?.socSparkline || [] },
+    { title: 'Charging Status',  value: metrics ? `${metrics.soc}%`          : '--',       icon: <Battery size={24} />, trend: 'Live',   trendUp: true,  gradient: 'from-green-500 to-green-600',  iconBg: 'bg-green-500/10',  lineColor: '#10b981', data: metrics?.socSparkline || [] },
     { title: 'Last Current',     value: metrics ? `${metrics.lastCurrent} A`  : '--',       icon: <Activity size={24} />, trend: 'Live',  trendUp: true,  gradient: 'from-blue-500 to-blue-600',   iconBg: 'bg-blue-500/10',   lineColor: '#3b82f6', data: metrics?.sparkline || [] },
     { title: 'Last Voltage',     value: metrics ? `${metrics.lastVoltage} V`  : '--',       icon: <Zap size={24} />,     trend: 'Stable', trendUp: true,  gradient: 'from-purple-500 to-purple-600', iconBg: 'bg-purple-500/10', lineColor: '#8b5cf6', data: [{v:230},{v:235},{v:237},{v:237}] },
     { title: 'Energy Consumed',  value: metrics ? metrics.endEnergy           : '--',       icon: <Gauge size={24} />,   trend: 'Total',  trendUp: true,  gradient: 'from-cyan-500 to-cyan-600',   iconBg: 'bg-cyan-500/10',   lineColor: '#06b6d4', data: [{v:0.1},{v:0.2},{v:0.3},{v:0.38}] },

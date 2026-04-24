@@ -1,16 +1,19 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-const isProtectedRoute = createRouteMatcher(['/dashboard'])
+const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)', '/overview', '/', '/stations', '/payments']);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (req.nextUrl.pathname.includes('python_api') || req.nextUrl.pathname.includes('/api/')) {
-    return;
+  const isApiRoute =
+    req.nextUrl.pathname.startsWith('/api/') ||
+    req.nextUrl.pathname.startsWith('/python_api/');
+
+  if (!isApiRoute && !isPublicRoute(req)) {
+    await auth.protect();
   }
-  if (isProtectedRoute(req)) await auth.protect()
 });
 
 export const config = {
   matcher: [
-    '/((?!python_api|api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
-}
+};

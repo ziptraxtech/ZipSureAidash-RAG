@@ -3,6 +3,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import dynamic from "next/dynamic";
+import SyncUser from "@/components/SyncUser";
 
 // Only loaded when PDF export is actually triggered, not on every page
 const DashboardContent = dynamic(() => import("@/app/stations/dashboard/page"), { ssr: false });
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="bg-[#F8FAFC]" suppressHydrationWarning>
+          <SyncUser />
           <main className="min-h-screen w-full">
             {children}
           </main>
