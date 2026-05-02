@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { MapPin, BarChart3, Clock, AlertTriangle, Coins } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const THIRTY_DAYS_MS = 40 * 24 * 60 * 60 * 1000;
 
 interface Device {
   id: number;
@@ -37,14 +37,15 @@ function saveCache(map: Record<number, string>) {
   try { localStorage.setItem(LS_KEY, JSON.stringify(map)); } catch { /* ignore */ }
 }
 
-const getRelativeTime = (datetime: string): string => {
-  const diffMs = Date.now() - new Date(datetime).getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return 'Just now';
-  if (diffMin < 60) return `${diffMin} min ago`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr} hr ago`;
-  return `${Math.floor(diffHr / 24)} days ago`;
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const formatLastSync = (datetime: string): string => {
+  const d = new Date(datetime);
+  const day = String(d.getDate()).padStart(2, '0');
+  const mon = MONTHS[d.getMonth()];
+  const yr = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${day} ${mon} ${yr}, ${hh}:${mm}`;
 };
 
 const DeviceCards: React.FC = () => {
@@ -126,7 +127,7 @@ const DeviceCards: React.FC = () => {
       location: 'Sapna Cinema Phase 3 Industrial Area, Delhi',
       health: 80,
       status: 'good',
-      lastUpdate: '2 min ago',
+      lastUpdate: 'Loading...',
       lastDatetime: null,
       reportAvailable: true
     },
@@ -136,7 +137,7 @@ const DeviceCards: React.FC = () => {
       location: 'Piccadily back side parking Sec-34 Chandigarh',
       health: 85,
       status: 'good',
-      lastUpdate: '3 min ago',
+      lastUpdate: 'Loading...',
       lastDatetime: null,
       reportAvailable: true
     },
@@ -146,7 +147,7 @@ const DeviceCards: React.FC = () => {
       location: 'Passport office front side parking Sec-34 Chandigarh',
       health: 90,
       status: 'excellent',
-      lastUpdate: '2 min ago',
+      lastUpdate: 'Loading...',
       lastDatetime: null,
       reportAvailable: true
     },
@@ -156,7 +157,7 @@ const DeviceCards: React.FC = () => {
       location: 'Piccadily multiplex II Sec-34 Chandigarh',
       health: 100,
       status: 'excellent',
-      lastUpdate: '1 min ago',
+      lastUpdate: 'Loading...',
       lastDatetime: null,
       reportAvailable: true
     },
@@ -175,6 +176,7 @@ const DeviceCards: React.FC = () => {
   const [hasMounted, setHasMounted] = useState(false);
   const [devices, setDevices] = useState<Device[]>(initialDevices);
   const [deviceLogs, setDeviceLogs] = useState<DeviceEventLogs>({});
+  const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
     const cleanupCallbacks: Array<() => void> = [];
@@ -344,7 +346,7 @@ const DeviceCards: React.FC = () => {
           if (!cached) return device;
           const lastDatetime = new Date(cached);
           const isStale = (Date.now() - lastDatetime.getTime()) > THIRTY_DAYS_MS;
-          return { ...device, lastUpdate: getRelativeTime(cached), lastDatetime, status: isStale ? 'offline' as const : device.status };
+          return { ...device, lastUpdate: formatLastSync(cached), lastDatetime, status: isStale ? 'offline' as const : device.status };
         });
         return [...updated].sort((a, b) => {
           if (!a.lastDatetime && !b.lastDatetime) return 0;
@@ -359,7 +361,7 @@ const DeviceCards: React.FC = () => {
       const results = await Promise.allSettled(
         initialDevices.map(async (device) => {
           const res = await fetch(getApiUrl(device.id, true), {
-            signal: AbortSignal.timeout(8000)
+            signal: AbortSignal.timeout(10000)
           });
           if (!res.ok) throw new Error('fetch failed');
           const data = await res.json();
@@ -368,7 +370,7 @@ const DeviceCards: React.FC = () => {
           if (validPoints.length === 0) return { id: device.id, lastUpdate: 'No data', lastDatetime: null };
           const last = validPoints[validPoints.length - 1];
           const lastDatetime = new Date(last.datetime);
-          return { id: device.id, lastUpdate: getRelativeTime(last.datetime), lastDatetime };
+          return { id: device.id, lastUpdate: formatLastSync(last.datetime), lastDatetime };
         })
       );
 
@@ -387,7 +389,9 @@ const DeviceCards: React.FC = () => {
           const match = results[idx];
           if (match?.status === 'fulfilled') {
             const { lastUpdate, lastDatetime } = match.value;
-            const isStale = lastDatetime !== null && (Date.now() - lastDatetime.getTime()) > THIRTY_DAYS_MS;
+            // If API returned no data, keep the cached value rather than overwriting with 'No data'
+            if (!lastDatetime) return device;
+            const isStale = (Date.now() - lastDatetime.getTime()) > THIRTY_DAYS_MS;
             return {
               ...device,
               lastUpdate,
@@ -395,7 +399,8 @@ const DeviceCards: React.FC = () => {
               status: isStale ? 'offline' as const : device.status,
             };
           }
-          return { ...device, lastUpdate: 'Offline', lastDatetime: null };
+          // Fetch failed/timed out — keep cached value, don't overwrite with 'Offline'
+          return device;
         });
 
         // Sort 0→100: most recently updated first (null = no data → comes last)
@@ -408,7 +413,7 @@ const DeviceCards: React.FC = () => {
       });
     };
 
-    fetchLastUpdates();
+    fetchLastUpdates().finally(() => setIsFetching(false));
   }, [initialDevices]);
 
   // ── helpers ──────────────────────────────────────────────────────────────
@@ -481,8 +486,15 @@ const DeviceCards: React.FC = () => {
 
           {/* Last update */}
           <div className="flex items-center gap-1.5 text-xs text-gray-400">
-            <Clock size={11} />
-            <span>Last update: <span className="font-medium text-gray-600">{device.lastUpdate}</span></span>
+            {isFetching ? (
+              <svg className="animate-spin h-2.5 w-2.5 text-blue-400" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
+            ) : (
+              <Clock size={11} />
+            )}
+            <span>Last update: <span className={`font-medium ${isFetching ? 'text-blue-400' : 'text-gray-600'}`}>{isFetching ? 'Loading...' : device.lastUpdate}</span></span>
           </div>
 
           {/* Live log (only for devices with chargerUrl) */}
